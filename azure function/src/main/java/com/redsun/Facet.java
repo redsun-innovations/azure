@@ -30,7 +30,7 @@ public class Facet {
                 .buildClient();
   
 
-    @FunctionName("Factes")
+    @FunctionName("factes")
     public HttpResponseMessage run(
             @HttpTrigger(name = "req", methods = {HttpMethod.GET}, authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
             final ExecutionContext context) {

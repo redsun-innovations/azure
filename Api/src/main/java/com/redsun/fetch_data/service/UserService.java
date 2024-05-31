@@ -5,6 +5,8 @@ import com.redsun.fetch_data.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -14,7 +16,14 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public String fetchAllData(String path, String displayName) {
-        return userRepository.fetchAllData(path, displayName);
+    public List<String> getQueryData(String name, String classCode) {
+        return userRepository.getQueryData(name, classCode);
+    }
+    public List<String> listQueryData(List<User> users) {
+        return userRepository.listQueryData(users);
+    }
+
+    public List<String> searchQueryData(String name) {
+        return userRepository.searchQueryData(name);
     }
 }

@@ -37,7 +37,7 @@ public class Endeca {
     .buildClient();
 
 
-    @FunctionName("Endeca-data")
+    @FunctionName("endeca-data")
     public HttpResponseMessage run(
             @HttpTrigger(name = "req", methods = {HttpMethod.GET}, authLevel = AuthorizationLevel.ANONYMOUS) HttpRequestMessage<Optional<String>> request,
             final ExecutionContext context) {

@@ -9,6 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import com.redsun.fetch_data.model.User;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Repository
 public class UserRepository {
@@ -33,24 +37,38 @@ public class UserRepository {
         objectMapper = new ObjectMapper();
     }
 
-    public String fetchAllData(String path, String displayName) {
-        String query = "SELECT * FROM c WHERE c.path = '" + path + "' AND c.displayName = '" + displayName + "'";
-        return executeQuery(query);
+    public List<String> getQueryData(String name, String classCode) {
+        String query = "SELECT c.groupBase36Id FROM c WHERE c.name = '" + name + "' AND c.classCode = '" + classCode + "'";
+        return executeBase36IdQuery(query);
     }
 
-    private String executeQuery(String query) {
-        StringBuilder result = new StringBuilder();
+    public List<String> listQueryData(List<User> users) {
+        String query = "SELECT c.groupBase36Id FROM c WHERE " +
+                users.stream()
+                        .map(group -> "(c.name = '" + group.getName() + "' AND c.classCode = '" + group.getClassCode() + "')")
+                        .collect(Collectors.joining(" OR "));
+        return executeBase36IdQuery(query);
+    }
+
+    public List<String> searchQueryData(String name) {
+        String query = "SELECT c.groupBase36Id FROM c WHERE c.name = '" + name + "'";
+        return executeBase36IdQuery(query);
+    }
+
+    private List<String> executeBase36IdQuery(String query) {
+        List<String> base36Ids = new ArrayList<>();
         try {
             CosmosPagedIterable<JsonNode> items = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
             for (JsonNode item : items) {
-                result.append(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(item)).append("\n");
+                if (item.has("groupBase36Id")) {
+                    base36Ids.add(item.get("groupBase36Id").asText());
+                }
             }
         } catch (Exception e) {
-            result.append("Error executing query: ").append(e.getMessage());
+            e.printStackTrace();
         }
-        return result.toString();
+        return base36Ids;
     }
-
     public void close() {
         cosmosClient.close();
     }
