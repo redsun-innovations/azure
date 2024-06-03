@@ -1,6 +1,6 @@
 package com.redsun.fetch_data.model;
 
-public class User {
+public class FacetGroup {
     private String name;
     private String classCode;
 

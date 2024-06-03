@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import com.redsun.fetch_data.model.User;
+import com.redsun.fetch_data.model.FacetGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,17 +15,17 @@ import java.util.stream.Collectors;
 
 
 @Repository
-public class UserRepository {
+public class FacetRepository {
 
     private final CosmosClient cosmosClient;
     private final CosmosDatabase database;
     private final CosmosContainer container;
     private final ObjectMapper objectMapper;
 
-    public UserRepository(@Value("${azure.cosmos.endpoint}") String endpoint,
-                          @Value("${azure.cosmos.key}") String key,
-                          @Value("${azure.cosmos.database}") String databaseName,
-                          @Value("${azure.cosmos.container}") String containerName) {
+    public FacetRepository(@Value("${azure.cosmos.endpoint}") String endpoint,
+                           @Value("${azure.cosmos.key}") String key,
+                           @Value("${azure.cosmos.database}") String databaseName,
+                           @Value("${azure.cosmos.container}") String containerName) {
 
         cosmosClient = new CosmosClientBuilder()
                 .endpoint(endpoint)
@@ -38,20 +38,20 @@ public class UserRepository {
     }
 
     public List<String> getQueryData(String name, String classCode) {
-        String query = "SELECT c.groupBase36Id FROM c WHERE c.name = '" + name + "' AND c.classCode = '" + classCode + "'";
+        String query = "SELECT c.base36Id FROM c WHERE c.name = '" + name + "' AND c.classCode = '" + classCode + "'";
         return executeBase36IdQuery(query);
     }
 
-    public List<String> listQueryData(List<User> users) {
-        String query = "SELECT c.groupBase36Id FROM c WHERE " +
-                users.stream()
+    public List<String> listQueryData(List<FacetGroup> facetGroups) {
+        String query = "SELECT c.base36Id FROM c WHERE " +
+                facetGroups.stream()
                         .map(group -> "(c.name = '" + group.getName() + "' AND c.classCode = '" + group.getClassCode() + "')")
                         .collect(Collectors.joining(" OR "));
         return executeBase36IdQuery(query);
     }
 
     public List<String> searchQueryData(String name) {
-        String query = "SELECT c.groupBase36Id FROM c WHERE c.name = '" + name + "'";
+        String query = "SELECT c.base36Id FROM c WHERE c.name = '" + name + "'";
         return executeBase36IdQuery(query);
     }
 
@@ -60,8 +60,8 @@ public class UserRepository {
         try {
             CosmosPagedIterable<JsonNode> items = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
             for (JsonNode item : items) {
-                if (item.has("groupBase36Id")) {
-                    base36Ids.add(item.get("groupBase36Id").asText());
+                if (item.has("base36Id")) {
+                    base36Ids.add(item.get("base36Id").asText());
                 }
             }
         } catch (Exception e) {
