@@ -1,23 +1,23 @@
 package com.redsun.fetch_data.model;
 
 public class FacetGroup {
-    private String name;
-    private String classCode;
+    private String facetType;
+    private String facetValue;
 
 
-    public String getName() {
-        return name;
+    public String getFacetType() {
+        return facetType;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFacetType(String facetType) {
+        this.facetType = facetType;
     }
 
-    public String getClassCode() {
-        return classCode;
+    public String getFacetValue() {
+        return facetValue;
     }
 
-    public void setClassCode(String classCode) {
-        this.classCode = classCode;
+    public void setFacetValue(String facetValue) {
+        this.facetValue = facetValue;
     }
 }

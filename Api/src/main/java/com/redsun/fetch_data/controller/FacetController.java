@@ -15,8 +15,8 @@ public class FacetController {
     private FacetService facetService;
 
     @GetMapping("/get")
-    public List<String> getQueryData(@RequestParam String name, @RequestParam String classCode) {
-        return facetService.getQueryData(name, classCode);
+    public List<String> getQueryData(@RequestParam String facetType, @RequestParam String facetValue) {
+        return facetService.getQueryData(facetType, facetValue);
     }
 
     @PostMapping("/list")
@@ -26,7 +26,7 @@ public class FacetController {
 
 
     @GetMapping("/search")
-    public List<String> searchQueryData(@RequestParam("name") String name) {
-        return facetService.searchQueryData(name);
+    public List<String> searchQueryData(@RequestParam("facetType") String facetType) {
+        return facetService.searchQueryData(facetType);
     }
 }

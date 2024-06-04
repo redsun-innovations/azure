@@ -16,14 +16,14 @@ public class FacetService {
         this.facetRepository = facetRepository;
     }
 
-    public List<String> getQueryData(String name, String classCode) {
-        return facetRepository.getQueryData(name, classCode);
+    public List<String> getQueryData(String facetType, String facetValue) {
+        return facetRepository.getQueryData(facetType, facetValue);
     }
     public List<String> listQueryData(List<FacetGroup> facetGroups) {
         return facetRepository.listQueryData(facetGroups);
     }
 
-    public List<String> searchQueryData(String name) {
-        return facetRepository.searchQueryData(name);
+    public List<String> searchQueryData(String facetType) {
+        return facetRepository.searchQueryData(facetType);
     }
 }

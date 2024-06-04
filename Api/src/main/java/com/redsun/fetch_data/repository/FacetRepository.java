@@ -37,21 +37,21 @@ public class FacetRepository {
         objectMapper = new ObjectMapper();
     }
 
-    public List<String> getQueryData(String name, String classCode) {
-        String query = "SELECT c.base36Id FROM c WHERE c.name = '" + name + "' AND c.classCode = '" + classCode + "'";
+    public List<String> getQueryData(String facetType, String facetValue) {
+        String query = "SELECT c.facetTypebase36Id FROM c WHERE c.facetType = '" + facetType + "' AND c.facetValue = '" + facetValue + "'";
         return executeBase36IdQuery(query);
     }
 
     public List<String> listQueryData(List<FacetGroup> facetGroups) {
-        String query = "SELECT c.base36Id FROM c WHERE " +
+        String query = "SELECT c.facetTypebase36Id FROM c WHERE " +
                 facetGroups.stream()
-                        .map(group -> "(c.name = '" + group.getName() + "' AND c.classCode = '" + group.getClassCode() + "')")
+                        .map(group -> "(c.facetType = '" + group.getFacetType() + "' AND c.facetValue = '" + group.getFacetValue() + "')")
                         .collect(Collectors.joining(" OR "));
         return executeBase36IdQuery(query);
     }
 
-    public List<String> searchQueryData(String name) {
-        String query = "SELECT c.base36Id FROM c WHERE c.name = '" + name + "'";
+    public List<String> searchQueryData(String facetType) {
+        String query = "SELECT c.facetTypebase36Id FROM c WHERE c.facetType = '" + facetType + "'";
         return executeBase36IdQuery(query);
     }
 
@@ -60,8 +60,8 @@ public class FacetRepository {
         try {
             CosmosPagedIterable<JsonNode> items = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
             for (JsonNode item : items) {
-                if (item.has("base36Id")) {
-                    base36Ids.add(item.get("base36Id").asText());
+                if (item.has("facetTypebase36Id")) {
+                    base36Ids.add(item.get("facetTypebase36Id").asText());
                 }
             }
         } catch (Exception e) {
