@@ -43,11 +43,19 @@ public class FacetRepository {
     }
 
     public List<String> listQueryData(List<FacetGroup> facetGroups) {
-        String query = "SELECT c.facetTypebase36Id FROM c WHERE " +
-                facetGroups.stream()
-                        .map(group -> "(c.facetType = '" + group.getFacetType() + "' AND c.facetValue = '" + group.getFacetValue() + "')")
-                        .collect(Collectors.joining(" OR "));
-        return executeBase36IdQuery(query);
+        List<String> results = new ArrayList<>();
+        for (FacetGroup group : facetGroups) {
+            String query = "SELECT c.facetTypebase36Id FROM c WHERE c.facetType = '" + group.getFacetType() +
+                    "' AND c.facetValue = '" + group.getFacetValue() + "'";
+            List<String> queryResult = executeBase36IdQuery(query);
+
+            if (queryResult.isEmpty()) {
+                results.add("null");
+            } else {
+                results.add(queryResult.get(0));
+            }
+        }
+        return results;
     }
 
     public List<String> searchQueryData(String facetType) {
