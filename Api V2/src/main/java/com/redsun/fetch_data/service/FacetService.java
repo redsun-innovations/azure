@@ -32,7 +32,7 @@ public class FacetService {
         for (Map<String, Object> facet : facets) {
             Map<String, Object> formattedFacet = new HashMap<>();
             formattedFacet.put("facetType", facet.get("facetType"));
-            formattedFacet.put("facetTypeBase36", facet.get("facetTypeBase36"));
+            formattedFacet.put("facetTypebase36Id", facet.get("facetTypebase36Id"));
             formattedFacet.put("facetValues", facet.get("facetValues"));
 
             response.add(formattedFacet);

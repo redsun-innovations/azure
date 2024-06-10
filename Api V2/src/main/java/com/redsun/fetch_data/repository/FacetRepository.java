@@ -52,7 +52,7 @@ public class FacetRepository {
     CosmosPagedIterable<JsonNode> items = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
 
         items.forEach(item -> {
-        String facetType = item.get("facetType").asText();
+        String facetType = item.has("facetType") ? item.get("facetType").asText() : null;
         String facetTypeBase36Id = item.has("facetTypebase36Id") ? item.get("facetTypebase36Id").asText() : null;
         String facetValueText = item.has("facetValue") ? item.get("facetValue").asText() : null;
         String base36Id = item.has("base36Id") ? item.get("base36Id").asText() : null;
@@ -63,7 +63,7 @@ public class FacetRepository {
         } else {
             facetMap = new HashMap<>();
             facetMap.put("facetType", facetType);
-            facetMap.put("facetTypeBase36", facetTypeBase36Id);
+            facetMap.put("facetTypebase36Id", facetTypeBase36Id);
             facetMap.put("facetValues", new ArrayList<Map<String, Object>>());
             groupedFacets.put(facetType, facetMap);
         }
@@ -75,6 +75,21 @@ public class FacetRepository {
         List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get("facetValues");
         facetValues.add(facetValueMap);
     });
+
+        for (String facetType : facetTypes) {
+            if (!groupedFacets.containsKey(facetType)) {
+                Map<String, Object> nullFacetMap = new HashMap<>();
+                nullFacetMap.put("facetType", facetType);
+                nullFacetMap.put("facetTypebase36Id", null);
+                List<Map<String, Object>> nullFacetValues = new ArrayList<>();
+                Map<String, Object> nullFacetValueMap = new HashMap<>();
+                nullFacetValueMap.put("facetValue", null);
+                nullFacetValueMap.put("base36Id", null);
+                nullFacetValues.add(nullFacetValueMap);
+                nullFacetMap.put("facetValues", nullFacetValues);
+                groupedFacets.put(facetType, nullFacetMap);
+            }
+        }
 
     return new ArrayList<>(groupedFacets.values());
 }
