@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Hierarchy-Api
+
+azure:
+  cosmos:
+    endpoint: https://roshancosmosdb.documents.azure.com:443/
+    key: IfkIJjIG2SKoN149vdZlKLPpAxv2h5PjfBKu7FRT8WKNCqDcr1lchG6wFH68H5nBH6HUKH6tRESuACDboGV3Yw==
+    database: SampleDB
+    container: Users
+    connection-mode: Gateway
+mvc:
+  path match:
+    matching-strategy: ANT_PATH_M
