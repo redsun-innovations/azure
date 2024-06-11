@@ -48,33 +48,33 @@ public class FacetRepository {
         if (facetValue != null) {
             query += " AND c.facetValue = '" + facetValue + "'";
         }
-    Map<String, Map<String, Object>> groupedFacets = new LinkedHashMap<>();
-    CosmosPagedIterable<JsonNode> items = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
+        Map<String, Map<String, Object>> groupedFacets = new LinkedHashMap<>();
+        CosmosPagedIterable<JsonNode> items = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
 
         items.forEach(item -> {
-        String facetType = item.has("facetType") ? item.get("facetType").asText() : null;
-        String facetTypeBase36Id = item.has("facetTypebase36Id") ? item.get("facetTypebase36Id").asText() : null;
-        String facetValueText = item.has("facetValue") ? item.get("facetValue").asText() : null;
-        String base36Id = item.has("base36Id") ? item.get("base36Id").asText() : null;
+            String facetType = item.has("facetType") ? item.get("facetType").asText() : null;
+            String facetTypeBase36Id = item.has("facetTypebase36Id") ? item.get("facetTypebase36Id").asText() : null;
+            String facetValueText = item.has("facetValue") ? item.get("facetValue").asText() : null;
+            String base36Id = item.has("base36Id") ? item.get("base36Id").asText() : null;
 
-        Map<String, Object> facetMap;
-        if (groupedFacets.containsKey(facetType)) {
-            facetMap = groupedFacets.get(facetType);
-        } else {
-            facetMap = new HashMap<>();
-            facetMap.put("facetType", facetType);
-            facetMap.put("facetTypebase36Id", facetTypeBase36Id);
-            facetMap.put("facetValues", new ArrayList<Map<String, Object>>());
-            groupedFacets.put(facetType, facetMap);
-        }
+            Map<String, Object> facetMap;
+            if (groupedFacets.containsKey(facetType)) {
+                facetMap = groupedFacets.get(facetType);
+            } else {
+                facetMap = new HashMap<>();
+                facetMap.put("facetType", facetType);
+                facetMap.put("facetTypebase36Id", facetTypeBase36Id);
+                facetMap.put("facetValues", new ArrayList<Map<String, Object>>());
+                groupedFacets.put(facetType, facetMap);
+            }
 
-        Map<String, Object> facetValueMap = new HashMap<>();
-        facetValueMap.put("facetValue", facetValueText);
-        facetValueMap.put("base36Id", base36Id);
+            Map<String, Object> facetValueMap = new HashMap<>();
+            facetValueMap.put("facetValue", facetValueText);
+            facetValueMap.put("base36Id", base36Id);
 
-        List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get("facetValues");
-        facetValues.add(facetValueMap);
-    });
+            List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get("facetValues");
+            facetValues.add(facetValueMap);
+        });
 
         for (String facetType : facetTypes) {
             if (!groupedFacets.containsKey(facetType)) {
@@ -91,9 +91,8 @@ public class FacetRepository {
             }
         }
 
-    return new ArrayList<>(groupedFacets.values());
-}
-
+        return new ArrayList<>(groupedFacets.values());
+    }
     public Map<String, Object> listData(Integer pageNumber, Integer pageSize) {
         if (pageNumber == null) {
             pageNumber = 1;
@@ -102,35 +101,40 @@ public class FacetRepository {
             pageSize = 200;
         }
 
-        List<Map<String, Object>> results = new ArrayList<>();
         int offset = pageSize * (pageNumber - 1);
         String query = "SELECT c.facetType, c.facetTypebase36Id, c.facetValue, c.base36Id FROM c WHERE c.pk = 'facets' OFFSET " + offset + " LIMIT " + pageSize;
         CosmosPagedIterable<JsonNode> items = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
 
-        for (JsonNode item : items) {
-            Map<String, Object> resultItem = new HashMap<>();
-            JsonNode facetTypeNode = item.get("facetType");
-            JsonNode facetTypebase36Id = item.get("facetTypebase36Id");
-            JsonNode base36IdNode = item.get("base36Id");
-            JsonNode facetValueNode = item.get("facetValue");
+        Map<String, Map<String, Object>> groupedFacets = new LinkedHashMap<>();
 
-            if (facetTypeNode != null) {
-                resultItem.put("facetType", facetTypeNode.asText());
-            }
-            if (facetTypebase36Id != null) {
-                resultItem.put("facetTypebase36Id", facetTypebase36Id.asText());
-            }
-            if (base36IdNode != null && facetValueNode != null) {
-                List<Map<String, String>> facetValues = new ArrayList<>();
-                facetValues.add(Map.of(
-                        "base36Id", base36IdNode.asText(),
-                        "facetValue", facetValueNode.asText()
-                ));
-                resultItem.put("facetValues", facetValues);
+        items.forEach(item -> {
+            String facetType = item.has("facetType") ? item.get("facetType").asText() : null;
+            String facetTypebase36Id = item.has("facetTypebase36Id") ? item.get("facetTypebase36Id").asText() : null;
+            String facetValueText = item.has("facetValue") ? item.get("facetValue").asText() : null;
+            String base36Id = item.has("base36Id") ? item.get("base36Id").asText() : null;
+
+            String uniqueKey = facetType + "-" + facetTypeBase36Id;
+
+            Map<String, Object> facetMap;
+            if (groupedFacets.containsKey(uniqueKey)) {
+                facetMap = groupedFacets.get(uniqueKey);
+            } else {
+                facetMap = new HashMap<>();
+                facetMap.put("facetType", facetType);
+                facetMap.put("facetTypebase36Id", facetTypebase36Id);
+                facetMap.put("facetValues", new ArrayList<Map<String, Object>>());
+                groupedFacets.put(uniqueKey, facetMap);
             }
 
-            results.add(resultItem);
-        }
+            Map<String, Object> facetValueMap = new HashMap<>();
+            facetValueMap.put("facetValue", facetValueText);
+            facetValueMap.put("base36Id", base36Id);
+
+            List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get("facetValues");
+            facetValues.add(facetValueMap);
+        });
+
+        List<Map<String, Object>> results = new ArrayList<>(groupedFacets.values());
 
         Map<String, Object> response = new HashMap<>();
         response.put("pageNumber", pageNumber);
@@ -140,6 +144,8 @@ public class FacetRepository {
 
         return response;
     }
+
+
     public void close() {
         cosmosClient.close();
     }
