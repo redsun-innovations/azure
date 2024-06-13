@@ -42,7 +42,6 @@ public class HierarchyRepository {
         container = database.getContainer(containerName);
         objectMapper = new ObjectMapper();
     }
-
     public List<Map<String, Object>> fetchHierarchyData(String classCode, boolean avoidDuplicates) {
         StringBuilder queryBuilder = new StringBuilder("SELECT c.displayName, c.classCode, c.base36Id, c.path FROM c WHERE c.pk = 'hierarchy'");
         queryBuilder.append(" AND c.classCode = '").append(classCode).append("'");
@@ -51,17 +50,20 @@ public class HierarchyRepository {
         CosmosPagedIterable<JsonNode> items = container.queryItems(queryBuilder.toString(), options, JsonNode.class);
 
         List<Map<String, Object>> results = new ArrayList<>();
+        Map<String, Map<String, Object>> groupedResults = new HashMap<>();
+
         Set<String> uniqueParentIds = new HashSet<>();
 
         if (!items.iterator().hasNext()) {
             Map<String, Object> result = new HashMap<>();
             result.put("classCode", classCode);
-
+            result.put("displayName", null);
             result.put("hierarchyValues", new ArrayList<Map<String, Object>>());
 
             Map<String, Object> hierarchyValue = new HashMap<>();
             hierarchyValue.put("base36Id", null);
             hierarchyValue.put("parentBase36Id", null);
+            hierarchyValue.put("path", null);
 
             ((List<Map<String, Object>>) result.get("hierarchyValues")).add(hierarchyValue);
             results.add(result);
@@ -83,20 +85,25 @@ public class HierarchyRepository {
                 return;
             }
 
-            Map<String, Object> result = new HashMap<>();
-            result.put("displayName", itemDisplayName);
-            result.put("path", itemPath);
-            result.put("classCode", itemClassCode);
-            result.put("hierarchyValues", new ArrayList<Map<String, Object>>());
+            String key = itemClassCode + "_" + itemDisplayName;
+            Map<String, Object> result = groupedResults.get(key);
+            if (result == null) {
+                result = new HashMap<>();
+                result.put("classCode", itemClassCode);
+                result.put("displayName", itemDisplayName);
+                result.put("hierarchyValues", new ArrayList<Map<String, Object>>());
+                groupedResults.put(key, result);
+            }
 
             Map<String, Object> hierarchyValue = new HashMap<>();
             hierarchyValue.put("base36Id", base36Id);
             hierarchyValue.put("parentBase36Id", parentBase36Id);
+            hierarchyValue.put("path", path);
 
             ((List<Map<String, Object>>) result.get("hierarchyValues")).add(hierarchyValue);
-            results.add(result);
         });
 
+        results.addAll(groupedResults.values());
         return results;
     }
 
@@ -117,6 +124,7 @@ public class HierarchyRepository {
         } else {
             parentDisplayName = pathElements[pathElements.length - 1];
         }
+
 
         SqlQuerySpec parentQuerySpec = new SqlQuerySpec(
                 "SELECT c.base36Id FROM c WHERE c.pk = 'hierarchy' AND c.displayName = @displayName",
