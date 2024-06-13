@@ -7,10 +7,10 @@ spring:
 
 azure:
   cosmos:
-    endpoint: https://roshancosmosdb.documents.azure.com:443/
-    key: IfkIJjIG2SKoN149vdZlKLPpAxv2h5PjfBKu7FRT8WKNCqDcr1lchG6wFH68H5nBH6HUKH6tRESuACDboGV3Yw==
+    endpoint: https://roshandb.documents.azure.com:443/
+    key: 39GO9XCdsyROYjemYsxqs6Pk5Gs7dLyMedJJHM8lxR9VDnPF24e8cX3h1zjeVUug1hK7IrD8iRDWACDbEPboaA==
     database: SampleDB
-    container: Users
+    container: User
     connection-mode: Gateway
 mvc:
   path match:

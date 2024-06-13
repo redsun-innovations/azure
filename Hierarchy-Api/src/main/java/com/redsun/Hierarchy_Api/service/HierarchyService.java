@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,12 +19,21 @@ public class HierarchyService {
         this.hierarchyRepository = hierarchyRepository;
     }
 
-    public List<Map<String, Object>> fetchHierarchyData(String displayName, String classCode, boolean avoidDuplicates) {
-        List<Map<String, Object>> hierarchyItems = hierarchyRepository.fetchHierarchyData(displayName, classCode, avoidDuplicates);
+    public List<Map<String, Object>> fetchHierarchyData(String classCode, boolean avoidDuplicates) {
+        if (classCode == null || classCode.isEmpty()) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error","ClassCodes list is not provided");
+        }
+
+        List<Map<String, Object>> hierarchyItems = hierarchyRepository.fetchHierarchyData(classCode, avoidDuplicates);
         return hierarchyItems;
     }
 
     public List<Map<String, Object>> getAllHierarchyData(List<String> classCodes,  boolean avoidDuplicates) {
+        if (classCodes == null || classCodes.isEmpty()) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error","ClassCodes list is not provided");
+        }
         return hierarchyRepository.getAllHierarchyData(classCodes, avoidDuplicates);
     }
 

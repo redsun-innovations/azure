@@ -9,5 +9,4 @@ public class HierarchyApiApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(HierarchyApiApplication.class, args);
 	}
-
 }

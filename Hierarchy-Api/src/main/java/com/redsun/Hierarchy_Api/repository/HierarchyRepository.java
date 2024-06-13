@@ -8,8 +8,10 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.SqlParameter;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.util.CosmosPagedIterable;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -41,10 +43,8 @@ public class HierarchyRepository {
         objectMapper = new ObjectMapper();
     }
 
-
-    public List<Map<String, Object>> fetchHierarchyData(String displayName, String classCode, boolean avoidDuplicates) {
+    public List<Map<String, Object>> fetchHierarchyData(String classCode, boolean avoidDuplicates) {
         StringBuilder queryBuilder = new StringBuilder("SELECT c.displayName, c.classCode, c.base36Id, c.path FROM c WHERE c.pk = 'hierarchy'");
-        queryBuilder.append(" AND c.displayName = '").append(displayName).append("'");
         queryBuilder.append(" AND c.classCode = '").append(classCode).append("'");
 
         CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
@@ -54,10 +54,9 @@ public class HierarchyRepository {
         Set<String> uniqueParentIds = new HashSet<>();
 
         if (!items.iterator().hasNext()) {
-            // No items found, return a default response with null values
             Map<String, Object> result = new HashMap<>();
-            result.put("displayName", displayName);
             result.put("classCode", classCode);
+
             result.put("hierarchyValues", new ArrayList<Map<String, Object>>());
 
             Map<String, Object> hierarchyValue = new HashMap<>();
@@ -72,6 +71,7 @@ public class HierarchyRepository {
 
         items.forEach(item -> {
             String itemDisplayName = item.get("displayName").asText();
+            String itemPath = item.get("path").asText();
             String itemClassCode = item.get("classCode").asText();
 
             String base36Id = item.get("base36Id").asText();
@@ -85,6 +85,7 @@ public class HierarchyRepository {
 
             Map<String, Object> result = new HashMap<>();
             result.put("displayName", itemDisplayName);
+            result.put("path", itemPath);
             result.put("classCode", itemClassCode);
             result.put("hierarchyValues", new ArrayList<Map<String, Object>>());
 
@@ -99,8 +100,8 @@ public class HierarchyRepository {
         return results;
     }
 
-    public List<Map<String, Object>> fetchHierarchyData(String displayName, String classCode) {
-        return fetchHierarchyData(displayName, classCode, true);
+    public List<Map<String, Object>> fetchHierarchyData(String classCode) {
+        return fetchHierarchyData(classCode, true);
     }
 
     private String getParentBase36Id(String fullPath) {
@@ -128,6 +129,8 @@ public class HierarchyRepository {
         }
         return null;
     }
+
+
     public List<Map<String, Object>> getAllHierarchyData(List<String> classCodes, boolean avoidDuplicates) {
         StringBuilder queryBuilder = new StringBuilder("SELECT c.classCode, c.base36Id FROM c WHERE c.pk = 'hierarchy'");
 
@@ -174,3 +177,5 @@ public class HierarchyRepository {
     }
 
 }
+
+
