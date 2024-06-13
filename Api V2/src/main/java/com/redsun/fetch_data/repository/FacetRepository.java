@@ -113,7 +113,7 @@ public class FacetRepository {
             String facetValueText = item.has("facetValue") ? item.get("facetValue").asText() : null;
             String base36Id = item.has("base36Id") ? item.get("base36Id").asText() : null;
 
-            String uniqueKey = facetType + "-" + facetTypeBase36Id;
+            String uniqueKey = facetType + "-" + facetTypebase36Id;
 
             Map<String, Object> facetMap;
             if (groupedFacets.containsKey(uniqueKey)) {
