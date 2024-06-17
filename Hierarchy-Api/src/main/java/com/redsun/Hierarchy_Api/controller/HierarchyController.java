@@ -24,16 +24,21 @@ public class HierarchyController {
     }
 
     @GetMapping
-    public List<Map<String, Object>> fetchHierarchyData(@RequestParam(required = false) String classCode,
-                                                         @RequestParam(required = false, defaultValue = "false") boolean avoidDuplicates) {
+    public List<Map<String, Object>> fetchHierarchyData(@RequestParam(required = true) String classCode,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean avoidDuplicates) {
         return hierarchyService.fetchHierarchyData(classCode, avoidDuplicates);
     }
 
+    @GetMapping("/allData")
+    public List<Map<String, Object>> fetchAllHierarchyData() {
+        return hierarchyService.fetchAllHierarchyData();
+    }
 
-    @GetMapping("/alldata")
-    public List<Map<String, Object>> getAllHierarchyData(
-            @RequestParam String classCode,
-            @RequestParam(required = false, defaultValue = "false") boolean avoidDuplicates) {
+
+
+    @GetMapping("/getData")
+    public List<Map<String, Object>> getAllHierarchyData(@RequestParam String classCode,
+                                                         @RequestParam(required = false, defaultValue = "false") boolean avoidDuplicates) {
         List<String> classCodes = Arrays.asList(classCode.split(","));
         return hierarchyService.getAllHierarchyData(classCodes, avoidDuplicates);
     }

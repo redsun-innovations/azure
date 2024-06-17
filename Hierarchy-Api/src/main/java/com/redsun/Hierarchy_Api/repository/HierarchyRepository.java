@@ -1,9 +1,6 @@
 package com.redsun.Hierarchy_Api.repository;
 
-import com.azure.cosmos.CosmosClient;
-import com.azure.cosmos.CosmosClientBuilder;
-import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.CosmosDatabase;
+import com.azure.cosmos.*;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.SqlParameter;
 import com.azure.cosmos.models.SqlQuerySpec;
@@ -17,6 +14,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Repository
@@ -42,6 +42,7 @@ public class HierarchyRepository {
         container = database.getContainer(containerName);
         objectMapper = new ObjectMapper();
     }
+
     public List<Map<String, Object>> fetchHierarchyData(String classCode, boolean avoidDuplicates) {
         StringBuilder queryBuilder = new StringBuilder("SELECT c.displayName, c.classCode, c.base36Id, c.path FROM c WHERE c.pk = 'hierarchy'");
         queryBuilder.append(" AND c.classCode = '").append(classCode).append("'");
@@ -73,7 +74,6 @@ public class HierarchyRepository {
 
         items.forEach(item -> {
             String itemDisplayName = item.get("displayName").asText();
-            String itemPath = item.get("path").asText();
             String itemClassCode = item.get("classCode").asText();
 
             String base36Id = item.get("base36Id").asText();
@@ -98,7 +98,6 @@ public class HierarchyRepository {
             Map<String, Object> hierarchyValue = new HashMap<>();
             hierarchyValue.put("base36Id", base36Id);
             hierarchyValue.put("parentBase36Id", parentBase36Id);
-            hierarchyValue.put("path", path);
 
             ((List<Map<String, Object>>) result.get("hierarchyValues")).add(hierarchyValue);
         });
@@ -138,6 +137,74 @@ public class HierarchyRepository {
         return null;
     }
 
+    public List<Map<String, Object>> fetchAllHierarchyData() {
+        Logger logger = LoggerFactory.getLogger(HierarchyRepository.class);
+        String query ="SELECT c.displayName, c.base36Id, c.path FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC";
+
+        CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
+        CosmosPagedIterable<Map> queryResults = container.queryItems(query, options, Map.class);
+
+        List<Map<String, Object>> items = new ArrayList<>();
+        queryResults.iterableByPage().forEach(page -> {
+            for (Map<String, Object> item : page.getResults()) {
+                items.add(item);
+            }
+        });
+
+        return getHierarchyData(items);
+    }
+
+    private List<Map<String, Object>> getHierarchyData(List<Map<String, Object>> items) {
+        List<Map<String, Object>> response = new ArrayList<>();
+        Map<String, String> displayNameToBase36Id = new HashMap<>();
+
+        for (Map<String, Object> item : items) {
+            String displayName = (String) item.get("displayName");
+            String base36Id = (String) item.get("base36Id");
+            displayNameToBase36Id.put(displayName, base36Id);
+        }
+
+        for (Map<String, Object> item : items) {
+            String displayName = (String) item.get("displayName");
+            String base36Id = (String) item.get("base36Id");
+            String path = (String) item.get("path");
+
+            Map<String, Object> responseItem = new HashMap<>();
+            responseItem.put("displayName", displayName);
+            responseItem.put("base36Id", base36Id);
+
+            String parentBase36Id = "/";
+
+            if (path != null && !path.equals("null")) {
+                String[] pathParts = path.split("/");
+                StringBuilder currentPath = new StringBuilder();
+                boolean found = false;
+
+                for (int i = pathParts.length - 1; i >= 0; i--) {
+                    String pathSegment = pathParts[i].trim();
+                    if (!pathSegment.isEmpty()) {
+                        currentPath.insert(0, pathSegment); // Prepend the current segment to currentPath
+                        String fullPath = currentPath.toString();
+                        if (displayNameToBase36Id.containsKey(fullPath)) {
+                            parentBase36Id = displayNameToBase36Id.get(fullPath);
+                            found = true;
+                            break;
+                        }
+                        currentPath.insert(0, "/"); // Insert separator before next segment
+                    }
+                }
+
+                if (!found) {
+                    parentBase36Id = "null";
+                }
+            }
+
+            responseItem.put("parentBase36Id", parentBase36Id);
+            response.add(responseItem);
+        }
+
+        return response;
+    }
 
     public List<Map<String, Object>> getAllHierarchyData(List<String> classCodes, boolean avoidDuplicates) {
         StringBuilder queryBuilder = new StringBuilder("SELECT c.classCode, c.base36Id FROM c WHERE c.pk = 'hierarchy'");
@@ -185,5 +252,3 @@ public class HierarchyRepository {
     }
 
 }
-
-

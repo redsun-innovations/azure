@@ -29,6 +29,10 @@ public class HierarchyService {
         return hierarchyItems;
     }
 
+    public List<Map<String, Object>> fetchAllHierarchyData() {
+        return hierarchyRepository.fetchAllHierarchyData();
+    }
+
     public List<Map<String, Object>> getAllHierarchyData(List<String> classCodes,  boolean avoidDuplicates) {
         if (classCodes == null || classCodes.isEmpty()) {
             Map<String, Object> errorResponse = new HashMap<>();
