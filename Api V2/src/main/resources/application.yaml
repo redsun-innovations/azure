@@ -10,7 +10,7 @@ azure:
     endpoint: https://roshandb.documents.azure.com:443/
     key: 39GO9XCdsyROYjemYsxqs6Pk5Gs7dLyMedJJHM8lxR9VDnPF24e8cX3h1zjeVUug1hK7IrD8iRDWACDbEPboaA==
     database: SampleDB
-    container: Users
+    container: User
     connection-mode: Gateway
 mvc:
   path match:
