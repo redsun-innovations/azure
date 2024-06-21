@@ -2,10 +2,7 @@ package com.redsun.Hierarchy_Api.controller;
 
 import com.redsun.Hierarchy_Api.service.HierarchyService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,23 +20,15 @@ public class HierarchyController {
         this.hierarchyService = hierarchyService;
     }
 
+    @GetMapping("/class-code/{classCode}")
+    public List<Map<String, Object>> fetchClassCodeData(@PathVariable String classCode) {
+        return hierarchyService.fetchClassCodeData(classCode);
+    }
+
     @GetMapping
-    public List<Map<String, Object>> fetchHierarchyData(@RequestParam(required = true) String classCode,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean avoidDuplicates) {
-        return hierarchyService.fetchHierarchyData(classCode, avoidDuplicates);
-    }
-
-    @GetMapping("/allData")
-    public List<Map<String, Object>> fetchAllHierarchyData() {
-        return hierarchyService.fetchAllHierarchyData();
-    }
-
-
-
-    @GetMapping("/getData")
-    public List<Map<String, Object>> getAllHierarchyData(@RequestParam String classCode,
-                                                         @RequestParam(required = false, defaultValue = "false") boolean avoidDuplicates) {
-        List<String> classCodes = Arrays.asList(classCode.split(","));
-        return hierarchyService.getAllHierarchyData(classCodes, avoidDuplicates);
+    public List<Map<String, Object>> getHierarchyData(
+            @RequestParam(required = false) String classCode,
+            @RequestParam(required = false, defaultValue = "true") boolean avoidDuplicates) {
+        return hierarchyService.getHierarchyData(classCode, avoidDuplicates);
     }
 }
