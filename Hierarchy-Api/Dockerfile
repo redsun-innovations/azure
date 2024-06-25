@@ -1,0 +1,11 @@
+FROM openjdk:21
+
+
+WORKDIR /app
+
+COPY target/Hierarchy-Api.jar app.jar
+
+EXPOSE 8080
+
+# Run the JAR file
+ENTRYPOINT ["java","-jar","app.jar"]
