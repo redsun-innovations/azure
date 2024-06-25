@@ -136,12 +136,11 @@ public class CosmosDbHierarchyRepositoryTest {
         assertEquals("Home Decor", fetchedItem1.get("displayName"));
         assertEquals("de018k", fetchedItem1.get("base36Id"));
         Object parentBase36Id = fetchedItem1.get("parentBase36Id");
-        assertTrue(parentBase36Id == null || "null".equals(parentBase36Id),
-                "Expected parentBase36Id to be null or \"null\"");
+        assertTrue(parentBase36Id == null || "".equals(parentBase36Id),
+                "Expected parentBase36Id to be null or empty");
 
         verify(container, times(1)).queryItems(anyString(), any(CosmosQueryRequestOptions.class), eq(JsonNode.class));
     }
-
     @Test
     public void testListAllHierarchyData() {
 
