@@ -7,11 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
+
 
 @Repository
 public class CosmosDbHierarchyRepository implements HierarchyRepository {
@@ -24,16 +21,15 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
     }
     public List<Map<String, Object>> fetchClassCodeData(String classCode) {
         String query = "SELECT c.displayName, c.base36Id, c.path, c.classCode FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC";
-
         CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
-        CosmosPagedIterable<Map> queryResults = container.queryItems(query, options, Map.class);
 
+        CosmosPagedIterable<JsonNode> queryResults = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
         List<Map<String, Object>> items = new ArrayList<>();
-        queryResults.iterableByPage().forEach(page -> {
-            for (Map<String, Object> item : page.getResults()) {
-                items.add(item);
-            }
-        });
+
+        for (JsonNode item : queryResults) {
+            Map<String, Object> itemMap = objectMapper.convertValue(item, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+            items.add(itemMap);
+        }
 
         List<Map<String, Object>> response = new ArrayList<>();
         Map<String, Map<String, Object>> classCodeToHierarchy = new HashMap<>();
@@ -46,6 +42,7 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
         });
 
         boolean classCodeFound = false;
+
         for (Map<String, Object> item : items) {
             String itemClassCode = (String) item.get("classCode");
             if (itemClassCode != null && itemClassCode.equals(classCode)) {
@@ -69,7 +66,6 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
 
             classCodeEntry.put("hierarchyValues", hierarchyValues);
             response.add(classCodeEntry);
-            return response;
         }
 
         items.forEach(item -> {
@@ -83,7 +79,7 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
                 hierarchyItem.put("path", path);
                 hierarchyItem.put("base36Id", base36Id);
 
-                String parentBase36Id = "null";
+                String parentBase36Id = "";
 
                 if (path != null && !path.equals("null")) {
                     String[] pathParts = path.split("/");
@@ -117,9 +113,12 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
                 ((List<Map<String, Object>>) classCodeToHierarchy.get(classCode).get("hierarchyValues")).add(hierarchyItem);
             }
         });
+
         response.addAll(classCodeToHierarchy.values());
+
         return response;
     }
+
 
 
     public List<Map<String, Object>> fetchAllHierarchyData() {
@@ -127,15 +126,13 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
         String query ="SELECT c.displayName, c.base36Id, c.path FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC";
 
         CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
-        CosmosPagedIterable<Map> queryResults = container.queryItems(query, options, Map.class);
+        CosmosPagedIterable<JsonNode> queryResults = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
 
         List<Map<String, Object>> items = new ArrayList<>();
-        queryResults.iterableByPage().forEach(page -> {
-            for (Map<String, Object> item : page.getResults()) {
-                items.add(item);
-            }
-        });
-
+        for (JsonNode item : queryResults) {
+            Map<String, Object> itemMap = objectMapper.convertValue(item, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+            items.add(itemMap);
+        }
         return getParentBase36Id(items);
     }
 
@@ -157,8 +154,7 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
             Map<String, Object> responseItem = new HashMap<>();
             responseItem.put("displayName", displayName);
             responseItem.put("base36Id", base36Id);
-
-            String parentBase36Id = "";
+            String parentBase36Id = "null";
 
             if (path != null && !path.equals("null")) {
                 String[] pathParts = path.split("/");
@@ -192,24 +188,21 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
     }
 
     public List<Map<String, Object>> listAllHierarchyData(List<String> classCodes, boolean avoidDuplicates) {
-        StringBuilder queryBuilder = new StringBuilder("SELECT c.classCode, c.base36Id FROM c WHERE c.pk = 'hierarchy'");
-
-        if (classCodes != null && !classCodes.isEmpty()) {
-            String classCodeFilter = classCodes.stream()
-                    .map(code -> "'" + code + "'")
-                    .collect(Collectors.joining(", "));
-            queryBuilder.append(" AND c.classCode IN (").append(classCodeFilter).append(")");
-        }
-
+        String query = "SELECT c.classCode, c.base36Id FROM c WHERE c.pk = 'hierarchy'";
         CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
-        CosmosPagedIterable<JsonNode> items = container.queryItems(queryBuilder.toString(), options, JsonNode.class);
+        CosmosPagedIterable<JsonNode> itemsContainer = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
+        List<Map<String, Object>> items = new ArrayList<>();
 
+        for (JsonNode item : itemsContainer) {
+            Map<String, Object> itemMap = objectMapper.convertValue(item, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+            items.add(itemMap);
+        }
         Map<String, String> base36IdMap = new HashMap<>();
         List<Map<String, Object>> results = new ArrayList<>();
 
         items.forEach(item -> {
-            String itemClassCode = item.get("classCode").asText();
-            String base36Id = item.get("base36Id").asText();
+            String itemClassCode = (String) item.get("classCode");
+            String base36Id = (String) item.get("base36Id");
 
             if (avoidDuplicates && base36IdMap.containsKey(itemClassCode)) {
                 return;
@@ -220,7 +213,6 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
             result.put("base36Id", base36Id);
 
             results.add(result);
-
             base36IdMap.put(itemClassCode, base36Id);
         });
 
