@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
-public class FacetServiceTests {
+public class FacetServiceTest {
 
     @Mock
     private FacetRepository facetRepository;

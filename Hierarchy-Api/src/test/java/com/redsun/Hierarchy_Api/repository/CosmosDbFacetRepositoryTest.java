@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.when;
 
 
 @AutoConfigureMockMvc
-public class CosmosDbFacetRepositoryTests {
+public class CosmosDbFacetRepositoryTest {
 
     @Mock
     private CosmosClient cosmosClient;
@@ -69,6 +70,7 @@ public class CosmosDbFacetRepositoryTests {
                 .put("base36Id", "6");
 
         CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
+        System.out.println("Processing pagedIterable: " + pagedIterable);
         when(pagedIterable.iterator()).thenReturn(Collections.singletonList(item1).iterator());
 
         // Mock container.queryItems
@@ -247,5 +249,60 @@ public class CosmosDbFacetRepositoryTests {
         assertEquals("Dell", facetValues.get(0).get("facetValue"));
         assertEquals("8d", facetValues.get(0).get("base36Id"));
     }
-}
 
+    @Test
+    void testSearchFacetsWithNonExistingFacetType() {
+        // Given
+        List<String> facetTypes = Arrays.asList("Brand", "est_eff_price_gt_0", "NonExistingType");
+        String facetValue = "Dell";
+
+        JsonNode jsonNodeBrand = new ObjectMapper().createObjectNode()
+                .put("facetType", "Brand")
+                .put("facetTypebase36Id", "8c")
+                .put("facetValue", "Dell")
+                .put("base36Id", "8d");
+
+        JsonNode jsonNode1 = new ObjectMapper().createObjectNode()
+                .put("pk", "facets")
+                .put("facetType", "est_eff_price_gt_0")
+                .put("facetTypebase36Id", "5")
+                .put("facetValue", "Y")
+                .put("base36Id", "6");
+
+        // Mock container.queryItems
+        CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
+        when(pagedIterable.iterator()).thenReturn(Arrays.asList(jsonNodeBrand, jsonNode1).iterator());
+        when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
+                .thenReturn(pagedIterable);
+
+        // When
+        List<Map<String, Object>> result = facetRepository.searchFacets(facetTypes, facetValue);
+
+        // Then
+        assertEquals(3, result.size()); // Adjusted to match actual behavior
+        Map<String, Object> brandFacet = result.get(0);
+        assertEquals("Brand", brandFacet.get("facetType"));
+        assertEquals("8c", brandFacet.get("facetTypebase36Id"));
+        List<Map<String, Object>> brandFacetValues = (List<Map<String, Object>>) brandFacet.get("facetValues");
+        assertEquals(1, brandFacetValues.size());
+        assertEquals("Dell", brandFacetValues.get(0).get("facetValue"));
+        assertEquals("8d", brandFacetValues.get(0).get("base36Id"));
+
+        Map<String, Object> categoryFacet = result.get(1);
+        assertEquals("est_eff_price_gt_0", categoryFacet.get("facetType"));
+        assertEquals("5", categoryFacet.get("facetTypebase36Id"));
+        List<Map<String, Object>> categoryFacetValues = (List<Map<String, Object>>) categoryFacet.get("facetValues");
+        assertEquals(1, categoryFacetValues.size());
+        assertEquals("Y", categoryFacetValues.get(0).get("facetValue"));  // Ensure different facetValue is checked
+        assertEquals("6", categoryFacetValues.get(0).get("base36Id"));
+
+        Map<String, Object> nonExistingTypeFacet = result.get(2);
+        assertEquals("NonExistingType", nonExistingTypeFacet.get("facetType"));
+        assertNull(nonExistingTypeFacet.get("facetTypebase36Id"));
+        List<Map<String, Object>> nonExistingTypeFacetValues = (List<Map<String, Object>>) nonExistingTypeFacet.get("facetValues");
+        assertEquals(1, nonExistingTypeFacetValues.size());
+        assertNull(nonExistingTypeFacetValues.get(0).get("facetValue"));
+        assertNull(nonExistingTypeFacetValues.get(0).get("base36Id"));
+    }
+
+}
