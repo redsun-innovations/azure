@@ -32,40 +32,49 @@ public class CosmosDbFacetRepository implements FacetRepository {
         if (facetValue != null) {
             query += " AND c.facetValue = '" + facetValue + "'";
         }
+        Map<String, Map<String, Object>> groupedFacets = retrieveGroupedFacets(query);
+
+        ensureAllFacetTypesPresent(facetTypes, groupedFacets);
+
+        return new ArrayList<>(groupedFacets.values());
+    }
+
+    private Map<String, Map<String, Object>> retrieveGroupedFacets(String query) {
         Map<String, Map<String, Object>> groupedFacets = new LinkedHashMap<>();
         CosmosPagedIterable<JsonNode> items = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
-        Iterator<JsonNode>iterator = items.iterator();
+        Iterator<JsonNode> iterator = items.iterator();
 
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             JsonNode item = iterator.next();
-
 
             String facetType = item.has(Const.FACETTYPE) ? item.get(Const.FACETTYPE).asText() : null;
             String facetTypeBase36Id = item.has(Const.FACETTYPEBASE36ID) ? item.get(Const.FACETTYPEBASE36ID).asText() : null;
             String facetValueText = item.has(Const.FACETVALUE) ? item.get(Const.FACETVALUE).asText() : null;
             String base36Id = item.has(Const.FACETBASE36ID) ? item.get(Const.FACETBASE36ID).asText() : null;
 
-            Map<String, Object> facetMap;
-            if (groupedFacets.containsKey(facetType)) {
-                facetMap = groupedFacets.get(facetType);
-            } else {
-                facetMap = new HashMap<>();
-                facetMap.put(Const.FACETTYPE, facetType);
-                facetMap.put(Const.FACETTYPEBASE36ID, facetTypeBase36Id);
-                facetMap.put(Const.FACETVALUES, new ArrayList<Map<String, Object>>());
-                groupedFacets.put(facetType, facetMap);
+            Map<String, Object> facetMap = groupedFacets.computeIfAbsent(facetType, key -> {
+                Map<String, Object> newFacetMap = new HashMap<>();
+                newFacetMap.put(Const.FACETTYPE, facetType);
+                newFacetMap.put(Const.FACETTYPEBASE36ID, facetTypeBase36Id);
+                newFacetMap.put(Const.FACETVALUES, new ArrayList<Map<String, Object>>());
+                return newFacetMap;
+            });
+
+            if (facetType != null) {
+                Map<String, Object> facetValueMap = new HashMap<>();
+                facetValueMap.put(Const.FACETVALUE, facetValueText);
+                facetValueMap.put(Const.FACETBASE36ID, base36Id);
+                List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get(Const.FACETVALUES);
+                facetValues.add(facetValueMap);
             }
-
-            Map<String, Object> facetValueMap = new HashMap<>();
-            facetValueMap.put(Const.FACETVALUE, facetValueText);
-            facetValueMap.put(Const.FACETBASE36ID, base36Id);
-
-            List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get(Const.FACETVALUES);
-            facetValues.add(facetValueMap);
         }
 
+        return groupedFacets;
+    }
+
+    private void ensureAllFacetTypesPresent(List<String> facetTypes, Map<String, Map<String, Object>> groupedFacets) {
         facetTypes.forEach(facetType -> {
-            groupedFacets.computeIfAbsent(facetType, key -> {
+            if (!groupedFacets.containsKey(facetType)) {
                 Map<String, Object> nullFacetMap = new HashMap<>();
                 nullFacetMap.put(Const.FACETTYPE, facetType);
                 nullFacetMap.put(Const.FACETTYPEBASE36ID, null);
@@ -76,12 +85,10 @@ public class CosmosDbFacetRepository implements FacetRepository {
                 nullFacetValues.add(nullFacetValueMap);
                 nullFacetMap.put(Const.FACETVALUES, nullFacetValues);
                 groupedFacets.put(facetType, nullFacetMap);
-                return nullFacetMap;
-            });
+            }
         });
-
-        return new ArrayList<>(groupedFacets.values());
     }
+
     public Map<String, Object> listData(Integer pageNumber, Integer pageSize) {
         if (pageNumber == null) {
             pageNumber = 1;

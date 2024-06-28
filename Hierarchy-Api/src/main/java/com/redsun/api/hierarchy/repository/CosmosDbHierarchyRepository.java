@@ -162,10 +162,9 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
             String displayName = (String) item.get(Const.DISPLAYNAME);
             String base36Id = (String) item.get(Const.BASE36ID);
             String path = (String) item.get("path");
-            String classCode = (String) item.get(Const.CLASSCODE);
+
 
             Map<String, Object> responseItem = new HashMap<>();
-            responseItem.put(Const.CLASSCODE, classCode);
             responseItem.put(Const.DISPLAYNAME, displayName);
             responseItem.put(Const.BASE36ID, base36Id);
 

@@ -12,6 +12,9 @@ public class Const {
         public static final String PARENTBASE36ID = "parentBase36Id";
         public static final String HIERARCHYVALUES = "hierarchyValues";
 
+        private Const() {
+                throw new UnsupportedOperationException("This is a constant class and cannot be instantiated");
+        }
 
 
 }
