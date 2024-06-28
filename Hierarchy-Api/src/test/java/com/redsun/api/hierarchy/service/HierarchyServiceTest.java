@@ -1,5 +1,6 @@
 package com.redsun.api.hierarchy.service;
 
+import com.redsun.api.hierarchy.constant.ConstantTest;
 import com.redsun.api.hierarchy.repository.HierarchyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,22 +33,22 @@ class HierarchyServiceTest {
         List<Map<String, Object>> mockResponse = new ArrayList<>();
         Map<String, Object> hierarchyItem = new HashMap<>();
         hierarchyItem.put("path", "For the Home/Fresh Flowers & Houseplants");
-        hierarchyItem.put("parentBase36Id", "mgr0");
-        hierarchyItem.put("base36Id", "12gr0");
+        hierarchyItem.put(ConstantTest.PARENTBASE36ID, "mgr0");
+        hierarchyItem.put(ConstantTest.BASE36ID, ConstantTest.FACET_CODE_12GR0);
 
         Map<String, Object> hierarchyItem2 = new HashMap<>();
         hierarchyItem2.put("path", "Home Decor/Fresh Flowers & Houseplants");
-        hierarchyItem2.put("parentBase36Id", "mgr0");
-        hierarchyItem2.put("base36Id", "12gr0");
+        hierarchyItem2.put(ConstantTest.PARENTBASE36ID, "mgr0");
+        hierarchyItem2.put(ConstantTest.BASE36ID, ConstantTest.FACET_CODE_12GR0);
 
         List<Map<String, Object>> hierarchyValues = new ArrayList<>();
         hierarchyValues.add(hierarchyItem);
         hierarchyValues.add(hierarchyItem2);
 
         Map<String, Object> classCodeEntry = new HashMap<>();
-        classCodeEntry.put("classCode", "H157");
-        classCodeEntry.put("displayName", "Floral Arrangements");
-        classCodeEntry.put("hierarchyValues", hierarchyValues);
+        classCodeEntry.put(ConstantTest.CLASSCODE, "H157");
+        classCodeEntry.put(ConstantTest.DISPLAYNAME, "Floral Arrangements");
+        classCodeEntry.put(ConstantTest.HIERARCHYVALUES, hierarchyValues);
 
         mockResponse.add(classCodeEntry);
 
@@ -65,16 +66,16 @@ class HierarchyServiceTest {
 
         List<Map<String, Object>> mockResponse = new ArrayList<>();
         Map<String, Object> entry1 = new HashMap<>();
-        entry1.put("classCode", "0010");
-        entry1.put("base36Id", "de018k");
+        entry1.put(ConstantTest.CLASSCODE, "0010");
+        entry1.put(ConstantTest.BASE36ID, "de018k");
 
         Map<String, Object> entry2 = new HashMap<>();
-        entry2.put("classCode", "1157");
-        entry2.put("base36Id", "mgr0");
+        entry2.put(ConstantTest.CLASSCODE, "1157");
+        entry2.put(ConstantTest.BASE36ID, "mgr0");
 
         Map<String, Object> entry3 = new HashMap<>();
-        entry3.put("classCode", "F506");
-        entry3.put("base36Id", "1o4wvb3");
+        entry3.put(ConstantTest.CLASSCODE, "F506");
+        entry3.put(ConstantTest.BASE36ID, "1o4wvb3");
 
         mockResponse.add(entry1);
         mockResponse.add(entry2);
@@ -94,9 +95,9 @@ class HierarchyServiceTest {
 
         List<Map<String, Object>> mockResponse = new ArrayList<>();
         Map<String, Object> hierarchyItem = new HashMap<>();
-        hierarchyItem.put("displayName", "Floral Arrangements");
-        hierarchyItem.put("parentBase36Id", "mgr0");
-        hierarchyItem.put("base36Id", "12gr0");
+        hierarchyItem.put(ConstantTest.DISPLAYNAME, "Floral Arrangements");
+        hierarchyItem.put(ConstantTest.PARENTBASE36ID, "mgr0");
+        hierarchyItem.put(ConstantTest.BASE36ID, ConstantTest.FACET_CODE_12GR0);
 
         mockResponse.add(hierarchyItem);
 

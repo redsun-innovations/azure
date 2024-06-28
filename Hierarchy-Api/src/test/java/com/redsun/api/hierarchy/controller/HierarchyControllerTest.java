@@ -1,5 +1,6 @@
 package com.redsun.api.hierarchy.controller;
 
+import com.redsun.api.hierarchy.constant.ConstantTest;
 import com.redsun.api.hierarchy.service.HierarchyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,9 +44,9 @@ class HierarchyControllerTest {
 
         List<Map<String, Object>> mockResponse = new ArrayList<>();
         Map<String, Object> hierarchyItem = new HashMap<>();
-        hierarchyItem.put("classCode", "H157");
-        hierarchyItem.put("displayName", "Floral Arrangements");
-        hierarchyItem.put("hierarchyValues", new ArrayList<>());
+        hierarchyItem.put(ConstantTest.CLASSCODE, "H157");
+        hierarchyItem.put(ConstantTest.DISPLAYNAME, "Floral Arrangements");
+        hierarchyItem.put(ConstantTest.HIERARCHYVALUES, new ArrayList<>());
         mockResponse.add(hierarchyItem);
 
         when(hierarchyService.fetchClassCodeData("H157")).thenReturn(mockResponse);
@@ -64,8 +65,8 @@ class HierarchyControllerTest {
 
         List<Map<String, Object>> mockResponse = new ArrayList<>();
         Map<String, Object> entry = new HashMap<>();
-        entry.put("classCode", "0010");
-        entry.put("base36Id", "de018k");
+        entry.put(ConstantTest.CLASSCODE, "0010");
+        entry.put(ConstantTest.BASE36ID, "de018k");
         mockResponse.add(entry);
 
         when(hierarchyService.getHierarchyData(isNull(), eq(true))).thenReturn(mockResponse);

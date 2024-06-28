@@ -1,6 +1,7 @@
 package com.redsun.api.hierarchy.repository;
 
 import com.azure.cosmos.*;
+import com.redsun.api.hierarchy.constant.ConstantTest;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,16 +53,16 @@ class CosmosDbFacetRepositoryTest {
     @Test
     void testSearchFacetsWithFacetValue() {
         // Given
-        List<String> facetTypes = Arrays.asList("est_eff_price_gt_0");
+        List<String> facetTypes = Arrays.asList(ConstantTest.EST_EFF_PRICE_GT_0);
         String facetValue = "Y";
 
         // Create JsonNode using ObjectMapper
         JsonNode item1 = new ObjectMapper().createObjectNode()
-                .put("pk","facets")
-                .put("facetType", "est_eff_price_gt_0")
-                .put("facetTypebase36Id", "5")
-                .put("facetValue", "Y")
-                .put("base36Id", "6");
+                .put("pk", ConstantTest.FACETS)
+                .put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0)
+                .put(ConstantTest.FACETTYPEBASE36ID, "5")
+                .put(ConstantTest.FACETVALUE, "Y")
+                .put(ConstantTest.FACETBASE36ID, "6");
 
         CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
         when(pagedIterable.iterator()).thenReturn(Collections.singletonList(item1).iterator());
@@ -78,42 +79,41 @@ class CosmosDbFacetRepositoryTest {
 
         Map<String, Object> facet = result.get(0);
 
-        assertEquals("est_eff_price_gt_0", facet.get("facetType"));
+        assertEquals(ConstantTest.EST_EFF_PRICE_GT_0, facet.get(ConstantTest.FACETTYPE));
         assertEquals("5", facet.get("facetTypebase36Id"));
-        List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facet.get("facetValues");
+        List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facet.get(ConstantTest.FACETVALUES);
         assertEquals(1, facetValues.size());
-        assertEquals("Y", facetValues.get(0).get("facetValue"));
-        assertEquals("6", facetValues.get(0).get("base36Id"));
+        assertEquals("Y", facetValues.get(0).get(ConstantTest.FACETVALUE));
+        assertEquals("6", facetValues.get(0).get(ConstantTest.FACETBASE36ID));
     }
 
 
     @Test
     void testSearchFacetsWithMultipleFacetValues() {
         // Given
-        List<String> facetTypes = Arrays.asList("est_eff_price_gt_0", "Brand");
-        String facetValue = null;  // We want to include all facet values
+        List<String> facetTypes = Arrays.asList(ConstantTest.EST_EFF_PRICE_GT_0, ConstantTest.BRAND);
+        String facetValue = null;
 
-        // Create JsonNode using ObjectMapper
         JsonNode jsonNode1 = new ObjectMapper().createObjectNode()
-                .put("pk", "facets")
-                .put("facetType", "est_eff_price_gt_0")
-                .put("facetTypebase36Id", "5")
-                .put("facetValue", "Y")
-                .put("base36Id", "6");
+                .put("pk", ConstantTest.FACETS)
+                .put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0)
+                .put(ConstantTest.FACETTYPEBASE36ID, "5")
+                .put(ConstantTest.FACETVALUE, "Y")
+                .put(ConstantTest.FACETBASE36ID, "6");
 
         JsonNode jsonNode2 = new ObjectMapper().createObjectNode()
-                .put("pk", "facets")
-                .put("facetType", "est_eff_price_gt_0")
-                .put("facetTypebase36Id", "5")
-                .put("facetValue", "N")
-                .put("base36Id", "7");
+                .put("pk", ConstantTest.FACETS)
+                .put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0)
+                .put(ConstantTest.FACETTYPEBASE36ID, "5")
+                .put(ConstantTest.FACETVALUE, "N")
+                .put(ConstantTest.FACETBASE36ID, "7");
 
         JsonNode jsonNode3 = new ObjectMapper().createObjectNode()
-                .put("pk", "facets")
-                .put("facetType", "Brand")
-                .put("facetTypebase36Id", "8c")
-                .put("facetValue", "Dell")
-                .put("base36Id", "8d");
+                .put("pk", ConstantTest.FACETS)
+                .put(ConstantTest.FACETTYPE, ConstantTest.BRAND)
+                .put(ConstantTest.FACETTYPEBASE36ID, "8c")
+                .put(ConstantTest.FACETVALUE, "Dell")
+                .put(ConstantTest.FACETBASE36ID, "8d");
 
         CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
         when(pagedIterable.iterator()).thenReturn(Arrays.asList(jsonNode1, jsonNode2, jsonNode3).iterator());
@@ -129,22 +129,22 @@ class CosmosDbFacetRepositoryTest {
         assertEquals(2, result.size());
 
         Map<String, Object> facet1 = result.get(0);
-        assertEquals("est_eff_price_gt_0", facet1.get("facetType"));
-        assertEquals("5", facet1.get("facetTypebase36Id"));
-        List<Map<String, Object>> facetValues1 = (List<Map<String, Object>>) facet1.get("facetValues");
+        assertEquals(ConstantTest.EST_EFF_PRICE_GT_0, facet1.get(ConstantTest.FACETTYPE));
+        assertEquals("5", facet1.get(ConstantTest.FACETTYPEBASE36ID));
+        List<Map<String, Object>> facetValues1 = (List<Map<String, Object>>) facet1.get(ConstantTest.FACETVALUES);
         assertEquals(2, facetValues1.size());
-        assertEquals("Y", facetValues1.get(0).get("facetValue"));
-        assertEquals("6", facetValues1.get(0).get("base36Id"));
-        assertEquals("N", facetValues1.get(1).get("facetValue"));
-        assertEquals("7", facetValues1.get(1).get("base36Id"));
+        assertEquals("Y", facetValues1.get(0).get(ConstantTest.FACETVALUE));
+        assertEquals("6", facetValues1.get(0).get(ConstantTest.FACETBASE36ID));
+        assertEquals("N", facetValues1.get(1).get(ConstantTest.FACETVALUE));
+        assertEquals("7", facetValues1.get(1).get(ConstantTest.FACETBASE36ID));
 
         Map<String, Object> facet2 = result.get(1);
-        assertEquals("Brand", facet2.get("facetType"));
-        assertEquals("8c", facet2.get("facetTypebase36Id"));
-        List<Map<String, Object>> facetValues2 = (List<Map<String, Object>>) facet2.get("facetValues");
+        assertEquals(ConstantTest.BRAND, facet2.get(ConstantTest.FACETTYPE));
+        assertEquals("8c", facet2.get(ConstantTest.FACETTYPEBASE36ID));
+        List<Map<String, Object>> facetValues2 = (List<Map<String, Object>>) facet2.get(ConstantTest.FACETVALUES);
         assertEquals(1, facetValues2.size());
-        assertEquals("Dell", facetValues2.get(0).get("facetValue"));
-        assertEquals("8d", facetValues2.get(0).get("base36Id"));
+        assertEquals("Dell", facetValues2.get(0).get(ConstantTest.FACETVALUE));
+        assertEquals("8d", facetValues2.get(0).get(ConstantTest.FACETBASE36ID));
     }
 
     @Test
@@ -154,23 +154,22 @@ class CosmosDbFacetRepositoryTest {
         Integer pageSize = null;   // Should default to 200
 
         JsonNode jsonNode1 = new ObjectMapper().createObjectNode()
-                .put("pk", "facets")
-                .put("facetType", "est_eff_price_gt_0")
-                .put("facetTypebase36Id", "5")
-                .put("facetValue", "Y")
-                .put("base36Id", "6");
+                .put("pk", ConstantTest.FACETS)
+                .put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0)
+                .put(ConstantTest.FACETTYPEBASE36ID, "5")
+                .put(ConstantTest.FACETVALUE, "Y")
+                .put(ConstantTest.FACETBASE36ID, "6");
 
         JsonNode jsonNode2 = new ObjectMapper().createObjectNode()
-                .put("pk", "facets")
-                .put("facetType", "Brand")
-                .put("facetTypebase36Id", "8c")
-                .put("facetValue", "Dell")
-                .put("base36Id", "8d");
+                .put("pk", ConstantTest.FACETS)
+                .put(ConstantTest.FACETTYPE, ConstantTest.BRAND)
+                .put(ConstantTest.FACETTYPEBASE36ID, "8c")
+                .put(ConstantTest.FACETVALUE, "Dell")
+                .put(ConstantTest.FACETBASE36ID, "8d");
 
         CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
         when(pagedIterable.iterator()).thenReturn(Arrays.asList(jsonNode1, jsonNode2).iterator());
 
-        // Mock container.queryItems
         when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
                 .thenReturn(pagedIterable);
 
@@ -186,20 +185,20 @@ class CosmosDbFacetRepositoryTest {
         assertEquals(2, data.size());
 
         Map<String, Object> facet1 = data.get(0);
-        assertEquals("est_eff_price_gt_0", facet1.get("facetType"));
-        assertEquals("5", facet1.get("facetTypebase36Id"));
-        List<Map<String, Object>> facetValues1 = (List<Map<String, Object>>) facet1.get("facetValues");
+        assertEquals(ConstantTest.EST_EFF_PRICE_GT_0, facet1.get(ConstantTest.FACETTYPE));
+        assertEquals("5", facet1.get(ConstantTest.FACETTYPEBASE36ID));
+        List<Map<String, Object>> facetValues1 = (List<Map<String, Object>>) facet1.get(ConstantTest.FACETVALUES);
         assertEquals(1, facetValues1.size());
-        assertEquals("Y", facetValues1.get(0).get("facetValue"));
-        assertEquals("6", facetValues1.get(0).get("base36Id"));
+        assertEquals("Y", facetValues1.get(0).get(ConstantTest.FACETVALUE));
+        assertEquals("6", facetValues1.get(0).get(ConstantTest.FACETBASE36ID));
 
         Map<String, Object> facet2 = data.get(1);
-        assertEquals("Brand", facet2.get("facetType"));
-        assertEquals("8c", facet2.get("facetTypebase36Id"));
-        List<Map<String, Object>> facetValues2 = (List<Map<String, Object>>) facet2.get("facetValues");
+        assertEquals(ConstantTest.BRAND, facet2.get(ConstantTest.FACETTYPE));
+        assertEquals("8c", facet2.get(ConstantTest.FACETTYPEBASE36ID));
+        List<Map<String, Object>> facetValues2 = (List<Map<String, Object>>) facet2.get(ConstantTest.FACETVALUES);
         assertEquals(1, facetValues2.size());
-        assertEquals("Dell", facetValues2.get(0).get("facetValue"));
-        assertEquals("8d", facetValues2.get(0).get("base36Id"));
+        assertEquals("Dell", facetValues2.get(0).get(ConstantTest.FACETVALUE));
+        assertEquals("8d", facetValues2.get(0).get(ConstantTest.FACETBASE36ID));
     }
 
 
@@ -210,11 +209,11 @@ class CosmosDbFacetRepositoryTest {
         Integer pageSize = 1;
 
         JsonNode jsonNode1 = new ObjectMapper().createObjectNode()
-                .put("pk", "facets")
-                .put("facetType", "Brand")
-                .put("facetTypebase36Id", "8c")
-                .put("facetValue", "Dell")
-                .put("base36Id", "8d");
+                .put("pk", ConstantTest.FACETS)
+                .put(ConstantTest.FACETTYPE, ConstantTest.BRAND)
+                .put(ConstantTest.FACETTYPEBASE36ID, "8c")
+                .put(ConstantTest.FACETVALUE, "Dell")
+                .put(ConstantTest.FACETBASE36ID, "8d");
 
         CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
         when(pagedIterable.iterator()).thenReturn(Collections.singletonList(jsonNode1).iterator());
@@ -235,12 +234,12 @@ class CosmosDbFacetRepositoryTest {
         assertEquals(1, data.size());
 
         Map<String, Object> facet = data.get(0);
-        assertEquals("Brand", facet.get("facetType"));
-        assertEquals("8c", facet.get("facetTypebase36Id"));
-        List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facet.get("facetValues");
+        assertEquals(ConstantTest.BRAND, facet.get(ConstantTest.FACETTYPE));
+        assertEquals("8c", facet.get(ConstantTest.FACETTYPEBASE36ID));
+        List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facet.get(ConstantTest.FACETVALUES);
         assertEquals(1, facetValues.size());
-        assertEquals("Dell", facetValues.get(0).get("facetValue"));
-        assertEquals("8d", facetValues.get(0).get("base36Id"));
+        assertEquals("Dell", facetValues.get(0).get(ConstantTest.FACETVALUE));
+        assertEquals("8d", facetValues.get(0).get(ConstantTest.FACETBASE36ID));
     }
 }
 

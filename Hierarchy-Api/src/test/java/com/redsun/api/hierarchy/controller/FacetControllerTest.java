@@ -1,5 +1,6 @@
 package com.redsun.api.hierarchy.controller;
 
+import com.redsun.api.hierarchy.constant.ConstantTest;
 import com.redsun.api.hierarchy.service.FacetService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,18 +42,18 @@ class FacetControllerTest {
 
         // Perform GET request
         mockMvc.perform(get("/v1/facets")
-                        .param("facetType", "ats_code")
-                        .param("facetValue", "Y"))
+                        .param(ConstantTest.FACETTYPE, ConstantTest.ATS_CODE)
+                        .param(ConstantTest.FACETVALUE, "Y"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].facetType").value("ats_code"))
+                .andExpect(jsonPath("$[0].facetType").value(ConstantTest.ATS_CODE))
                 .andExpect(jsonPath("$[0].facetTypebase36Id").value("1"))
                 .andExpect(jsonPath("$[0].facetValues[0].base36Id").value("2"))
                 .andExpect(jsonPath("$[0].facetValues[0].facetValue").value("Y"));
     }
 
     @Test
-    void testSearchFacets_MissingFacetType() throws Exception {
+    void testMissingFacetType() throws Exception {
 
         when(facetService.searchFacets(null, null)).thenReturn(Collections.singletonList(Collections.singletonMap("error", "The query parameter facetType is missing")));
 
@@ -75,7 +76,7 @@ class FacetControllerTest {
                 .andExpect(jsonPath("$.pageNumber").value(1))
                 .andExpect(jsonPath("$.count").value(8))
                 .andExpect(jsonPath("$.pageSize").value(100))
-                .andExpect(jsonPath("$.data[0].facetType").value("ats_code"))
+                .andExpect(jsonPath("$.data[0].facetType").value(ConstantTest.ATS_CODE))
                 .andExpect(jsonPath("$.data[0].facetTypebase36Id").value("1"))
                 .andExpect(jsonPath("$.data[0].facetValues[0].base36Id").value("2"))
                 .andExpect(jsonPath("$.data[0].facetValues[0].facetValue").value("Y"));
@@ -85,15 +86,26 @@ class FacetControllerTest {
         List<Map<String, Object>> facets = new ArrayList<>();
 
         Map<String, Object> facet1 = new HashMap<>();
-        facet1.put("facetType", "ats_code");
-        facet1.put("facetTypebase36Id", "1");
+        facet1.put(ConstantTest.FACETTYPE, ConstantTest.ATS_CODE);
+        facet1.put(ConstantTest.FACETTYPEBASE36ID, "1");
         List<Map<String, Object>> facetValues1 = new ArrayList<>();
         Map<String, Object> facetValue1 = new HashMap<>();
-        facetValue1.put("base36Id", "2");
-        facetValue1.put("facetValue", "Y");
+        facetValue1.put(ConstantTest.BASE36ID, "2");
+        facetValue1.put(ConstantTest.FACETVALUE, "Y");
         facetValues1.add(facetValue1);
-        facet1.put("facetValues", facetValues1);
+        facet1.put(ConstantTest.FACETVALUES, facetValues1);
         facets.add(facet1);
+
+        Map<String, Object> facet2 = new HashMap<>();
+        facet2.put(ConstantTest.FACETTYPE, "est_eff_price_gt_0");
+        facet2.put(ConstantTest.FACETTYPEBASE36ID, "5");
+        List<Map<String, Object>> facetValues2 = new ArrayList<>();
+        Map<String, Object> facetValue2 = new HashMap<>();
+        facetValue2.put(ConstantTest.BASE36ID, "6");
+        facetValue2.put(ConstantTest.FACETVALUE, "Y");
+        facetValues2.add(facetValue2);
+        facet2.put(ConstantTest.FACETVALUES, facetValues2);
+        facets.add(facet2);
 
         return facets;
     }
@@ -106,15 +118,26 @@ class FacetControllerTest {
 
         List<Map<String, Object>> facets = new ArrayList<>();
         Map<String, Object> facet1 = new HashMap<>();
-        facet1.put("facetType", "ats_code");
-        facet1.put("facetTypebase36Id", "1");
+        facet1.put(ConstantTest.FACETTYPE, ConstantTest.ATS_CODE);
+        facet1.put(ConstantTest.FACETTYPEBASE36ID, "1");
         List<Map<String, Object>> facetValues1 = new ArrayList<>();
         Map<String, Object> facetValue1 = new HashMap<>();
-        facetValue1.put("base36Id", "2");
-        facetValue1.put("facetValue", "Y");
+        facetValue1.put(ConstantTest.BASE36ID, "2");
+        facetValue1.put(ConstantTest.FACETVALUE, "Y");
         facetValues1.add(facetValue1);
-        facet1.put("facetValues", facetValues1);
+        facet1.put(ConstantTest.FACETVALUES, facetValues1);
         facets.add(facet1);
+
+        Map<String, Object> facet2 = new HashMap<>();
+        facet2.put(ConstantTest.FACETTYPE, "est_eff_price_gt_0");
+        facet2.put(ConstantTest.FACETTYPEBASE36ID, "5");
+        List<Map<String, Object>> facetValues2 = new ArrayList<>();
+        Map<String, Object> facetValue2 = new HashMap<>();
+        facetValue2.put(ConstantTest.BASE36ID, "6");
+        facetValue2.put(ConstantTest.FACETVALUE, "Y");
+        facetValues2.add(facetValue2);
+        facet2.put(ConstantTest.FACETVALUES, facetValues2);
+        facets.add(facet2);
 
         data.put("data", facets);
         return data;

@@ -1,5 +1,6 @@
 package com.redsun.api.hierarchy.service;
 
+import com.redsun.api.hierarchy.constant.ConstantTest;
 import com.redsun.api.hierarchy.repository.FacetRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +26,9 @@ class FacetServiceTest {
 
 
     @Test
-    void testSearchFacets_WithValidInput() {
+    void testSearchFacetsWithValidInput() {
 
-        List<String> facetTypes = Arrays.asList("ats_code", "est_eff_price_gt_0");
+        List<String> facetTypes = Arrays.asList(ConstantTest.ATS_CODE, ConstantTest.EST_EFF_PRICE_GT_0);
         String facetValue = "Y";
 
         List<Map<String, Object>> mockFacets = createSampleFacets();
@@ -36,12 +37,12 @@ class FacetServiceTest {
         List<Map<String, Object>> response = facetService.searchFacets(facetTypes, facetValue);
 
         assertEquals(2, response.size());
-        assertEquals("ats_code", response.get(0).get("facetType"));
+        assertEquals(ConstantTest.ATS_CODE, response.get(0).get("facetType"));
 
     }
 
     @Test
-    void testSearchFacets_WithMissingFacetTypes() {
+    void testSearchFacetsWithMissingFacetTypes() {
 
         List<String> facetTypes = null;
 
@@ -69,25 +70,25 @@ class FacetServiceTest {
         List<Map<String, Object>> facets = new ArrayList<>();
 
         Map<String, Object> facet1 = new HashMap<>();
-        facet1.put("facetType", "ats_code");
-        facet1.put("facetTypebase36Id", "1");
+        facet1.put(ConstantTest.FACETTYPE, ConstantTest.ATS_CODE);
+        facet1.put(ConstantTest.FACETTYPEBASE36ID, "1");
         List<Map<String, Object>> facetValues1 = new ArrayList<>();
         Map<String, Object> facetValue1 = new HashMap<>();
-        facetValue1.put("base36Id", "2");
-        facetValue1.put("facetValue", "Y");
+        facetValue1.put(ConstantTest.BASE36ID, "2");
+        facetValue1.put(ConstantTest.FACETVALUE, "Y");
         facetValues1.add(facetValue1);
-        facet1.put("facetValues", facetValues1);
+        facet1.put(ConstantTest.FACETVALUES, facetValues1);
         facets.add(facet1);
 
         Map<String, Object> facet2 = new HashMap<>();
-        facet2.put("facetType", "est_eff_price_gt_0");
-        facet2.put("facetTypebase36Id", "5");
+        facet2.put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0);
+        facet2.put(ConstantTest.FACETTYPEBASE36ID, "5");
         List<Map<String, Object>> facetValues2 = new ArrayList<>();
         Map<String, Object> facetValue2 = new HashMap<>();
-        facetValue2.put("base36Id", "6");
-        facetValue2.put("facetValue", "Y");
+        facetValue2.put(ConstantTest.BASE36ID, "6");
+        facetValue2.put(ConstantTest.FACETVALUE, "Y");
         facetValues2.add(facetValue2);
-        facet2.put("facetValues", facetValues2);
+        facet2.put(ConstantTest.FACETVALUES, facetValues2);
         facets.add(facet2);
 
         return facets;
@@ -101,25 +102,25 @@ class FacetServiceTest {
 
         List<Map<String, Object>> facets = new ArrayList<>();
         Map<String, Object> facet1 = new HashMap<>();
-        facet1.put("facetType", "ats_code");
-        facet1.put("facetTypebase36Id", "1");
+        facet1.put(ConstantTest.FACETTYPE, ConstantTest.ATS_CODE);
+        facet1.put(ConstantTest.FACETTYPEBASE36ID, "1");
         List<Map<String, Object>> facetValues1 = new ArrayList<>();
         Map<String, Object> facetValue1 = new HashMap<>();
-        facetValue1.put("base36Id", "2");
-        facetValue1.put("facetValue", "Y");
+        facetValue1.put(ConstantTest.BASE36ID, "2");
+        facetValue1.put(ConstantTest.FACETVALUE, "Y");
         facetValues1.add(facetValue1);
-        facet1.put("facetValues", facetValues1);
+        facet1.put(ConstantTest.FACETVALUES, facetValues1);
         facets.add(facet1);
 
         Map<String, Object> facet2 = new HashMap<>();
-        facet2.put("facetType", "est_eff_price_gt_0");
-        facet2.put("facetTypebase36Id", "5");
+        facet2.put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0);
+        facet2.put(ConstantTest.FACETTYPEBASE36ID, "5");
         List<Map<String, Object>> facetValues2 = new ArrayList<>();
         Map<String, Object> facetValue2 = new HashMap<>();
-        facetValue2.put("base36Id", "6");
-        facetValue2.put("facetValue", "Y");
+        facetValue2.put(ConstantTest.BASE36ID, "6");
+        facetValue2.put(ConstantTest.FACETVALUE, "Y");
         facetValues2.add(facetValue2);
-        facet2.put("facetValues", facetValues2);
+        facet2.put(ConstantTest.FACETVALUES, facetValues2);
         facets.add(facet2);
 
         data.put("data", facets);
