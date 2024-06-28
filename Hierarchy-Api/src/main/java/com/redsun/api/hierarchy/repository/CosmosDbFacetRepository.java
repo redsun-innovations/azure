@@ -12,17 +12,34 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+/**
+ * Repository implementation for accessing and managing facets data stored in Azure Cosmos DB.
+ * This class provides methods for searching and listing facet data.
+ */
 
 @Repository
 public class CosmosDbFacetRepository implements FacetRepository {
 
     private final CosmosContainer container;
 
+    /**
+     * Constructor for CosmosDbFacetRepository.
+     *
+     * @param container the CosmosContainer instance for interacting with Azure Cosmos DB
+     */
 
     public CosmosDbFacetRepository(CosmosContainer container) {
         this.container = container;
 
     }
+
+    /**
+     * Searches for facets based on the provided facet types and facet value.
+     *
+     * @param facetTypes the list of facet types to search
+     * @param facetValue the facet value to search
+     * @return a list of maps representing the facets found
+     */
 
     public List<Map<String, Object>> searchFacets(List<String> facetTypes, String facetValue) {
         String facetTypesCondition = "'" + String.join("','", facetTypes) + "'";
@@ -38,6 +55,13 @@ public class CosmosDbFacetRepository implements FacetRepository {
 
         return new ArrayList<>(groupedFacets.values());
     }
+
+    /**
+     * Retrieves grouped facets based on the provided query.
+     *
+     * @param query the query to execute on the Cosmos DB
+     * @return a map of grouped facets
+     */
 
     private Map<String, Map<String, Object>> retrieveGroupedFacets(String query) {
         Map<String, Map<String, Object>> groupedFacets = new LinkedHashMap<>();
@@ -72,6 +96,14 @@ public class CosmosDbFacetRepository implements FacetRepository {
         return groupedFacets;
     }
 
+    /**
+     * Ensures that all provided facet types are present in the grouped facets.
+     * If a facet type is not found, it adds a null entry for that facet type.
+     *
+     * @param facetTypes the list of facet types to check
+     * @param groupedFacets the map of grouped facets
+     */
+
     private void ensureAllFacetTypesPresent(List<String> facetTypes, Map<String, Map<String, Object>> groupedFacets) {
         facetTypes.forEach(facetType -> {
             if (!groupedFacets.containsKey(facetType)) {
@@ -88,6 +120,14 @@ public class CosmosDbFacetRepository implements FacetRepository {
             }
         });
     }
+
+    /**
+     * Lists facet data based on the provided page number and page size.
+     *
+     * @param pageNumber the page number to retrieve
+     * @param pageSize the number of items per page
+     * @return a map containing the paginated facet data
+     */
 
     public Map<String, Object> listData(Integer pageNumber, Integer pageSize) {
         if (pageNumber == null) {

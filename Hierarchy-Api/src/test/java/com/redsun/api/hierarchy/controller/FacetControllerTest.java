@@ -34,6 +34,11 @@ class FacetControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(facetController).build();
     }
 
+    /**
+     * Test case for searching facets based on facet type and value.
+     *
+     * @throws Exception If there is an error performing the HTTP request or validating the response.
+     */
     @Test
     void testSearchFacets() throws Exception {
 
@@ -52,6 +57,11 @@ class FacetControllerTest {
                 .andExpect(jsonPath("$[0].facetValues[0].facetValue").value("Y"));
     }
 
+    /**
+     * Test case for handling missing facetType parameter in the request.
+     *
+     * @throws Exception If there is an error performing the HTTP request or validating the response.
+     */
     @Test
     void testMissingFacetType() throws Exception {
 
@@ -63,6 +73,12 @@ class FacetControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].error").value("The query parameter facetType is missing"));
     }
+
+    /**
+     * Test case for listing data with pagination information.
+     *
+     * @throws Exception If there is an error performing the HTTP request or validating the response.
+     */
     @Test
     void testListData() throws Exception {
 

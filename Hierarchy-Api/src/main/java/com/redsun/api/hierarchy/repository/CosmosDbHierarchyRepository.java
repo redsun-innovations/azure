@@ -11,15 +11,33 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+/**
+ * Repository for managing and querying hierarchy data in Azure Cosmos DB.
+ * This repository provides methods to fetch hierarchy data, including class codes and hierarchical relationships.
+ */
 @Repository
 public class CosmosDbHierarchyRepository implements HierarchyRepository {
     private final CosmosContainer container;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Constructs a new instance of {@code CosmosDbHierarchyRepository} with the specified {@code CosmosContainer}.
+     *
+     * @param container the CosmosContainer instance to be used for querying the database
+     */
+
     public CosmosDbHierarchyRepository(CosmosContainer container) {
         this.container = container;
         this.objectMapper = new ObjectMapper();
     }
+
+    /**
+     * Fetches hierarchy data for the specified class code.
+     *
+     * @param classCode the class code for which to fetch hierarchy data
+     * @return a list of maps representing the hierarchy data
+     */
 
 
     public List<Map<String, Object>> fetchClassCodeData(String classCode) {
@@ -53,6 +71,13 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
 
         return response;
     }
+    /**
+     * Maps display names to base36 IDs from the given list of items.
+     *
+     * @param items the list of items containing display names and base36 IDs
+     * @return a map with display names as keys and base36 IDs as values
+     */
+
 
     private Map<String, String> mapDisplayNameToBase36Id(List<Map<String, Object>> items) {
         Map<String, String> displayNameToBase36Id = new HashMap<>();
@@ -63,6 +88,13 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
         });
         return displayNameToBase36Id;
     }
+
+    /**
+     * Creates a placeholder entry for a class code that does not exist in the hierarchy data.
+     *
+     * @param classCode the class code for which to create the placeholder entry
+     * @return a map representing the placeholder entry
+     */
 
     private Map<String, Object> placeholderEntry(String classCode) {
         Map<String, Object> classCodeEntry = new HashMap<>();
@@ -82,6 +114,14 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
         return classCodeEntry;
     }
 
+    /**
+     * Processes the list of items to build a hierarchy structure for the specified class code.
+     *
+     * @param items                  the list of items to process
+     * @param classCode              the class code for which to build the hierarchy
+     * @param displayNameToBase36Id  a map of display names to base36 IDs
+     * @param classCodeToHierarchy   a map to store the hierarchy structure for each class code
+     */
     private void processItemsForHierarchy(List<Map<String, Object>> items, String classCode, Map<String, String> displayNameToBase36Id, Map<String, Map<String, Object>> classCodeToHierarchy) {
         items.stream()
                 .filter(item -> classCode.equals(item.get(Const.CLASSCODE)))
@@ -105,6 +145,14 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
                     ((List<Map<String, Object>>) classCodeToHierarchy.get(classCode).get(Const.HIERARCHYVALUES)).add(hierarchyItem);
                 });
     }
+
+    /**
+     * Computes the parent base36 ID for the given path.
+     *
+     * @param path                  the path for which to compute the parent base36 ID
+     * @param displayNameToBase36Id a map of display names to base36 IDs
+     * @return the parent base36 ID
+     */
 
     private String computeParentBase36Id(String path, Map<String, String> displayNameToBase36Id) {
         if (path == null || path.equals("null")) {
@@ -130,6 +178,11 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
     }
 
 
+    /**
+     * Fetches all hierarchy data.
+     *
+     * @return a list of maps representing all hierarchy data
+     */
 
     public List<Map<String, Object>> fetchAllHierarchyData() {
 
@@ -148,6 +201,15 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
         return getParentBase36Id(items);
     }
 
+    /**
+     * Retrieves the parent base36 IDs for items in the hierarchy data.
+     *
+     * This method processes each item in the provided list to determine its parent in the hierarchy,
+     * based on the path and displayName-to-base36Id mappings.
+     *
+     * @param items the list of items containing hierarchy data with display names, base36 IDs, and paths
+     * @return a list of maps, each containing display name, base36 ID, and parent base36 ID
+     */
     private List<Map<String, Object>> getParentBase36Id(List<Map<String, Object>> items) {
         List<Map<String, Object>> response = new ArrayList<>();
         Map<String, String> displayNameToBase36Id = new HashMap<>();
@@ -177,6 +239,16 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
         return response;
     }
 
+    /**
+     * Computes the parent base36 ID based on the given path and displayName-to-base36Id mappings.
+     *
+     * This method recursively checks the path segments to find the closest parent with a known base36 ID.
+     *
+     * @param path                 the path of the current item in the hierarchy
+     * @param displayNameToBase36Id a map mapping display names to their corresponding base36 IDs
+     * @return the parent base36 ID of the current item in the hierarchy
+     */
+
     private String fetchParentBase36Id(String path, Map<String, String> displayNameToBase36Id) {
         if (path == null || path.equals("null")) {
             return "";
@@ -201,6 +273,18 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
         return "null";
     }
 
+    /**
+     * Retrieves hierarchy data from Cosmos DB based on specified class codes.
+     *
+     * This method constructs a query to fetch class codes and their corresponding base36 IDs from Cosmos DB.
+     * If class codes are provided, it filters the query to include only those class codes.
+     * It then converts the retrieved JSON data into a list of maps containing class code and base36 ID pairs.
+     * Optionally, it can avoid adding duplicate entries based on class code when {@code avoidDuplicates} is true.
+     *
+     * @param classCodes      a list of class codes to filter the query results, can be null or empty
+     * @param avoidDuplicates a flag indicating whether to avoid duplicate entries based on class code
+     * @return a list of maps, each containing class code and base36 ID retrieved from Cosmos DB
+     */
     public List<Map<String, Object>> listAllHierarchyData(List<String> classCodes, boolean avoidDuplicates) {
         StringBuilder queryBuilder = new StringBuilder("SELECT c.classCode, c.base36Id FROM c WHERE c.pk = 'hierarchy'");
 
