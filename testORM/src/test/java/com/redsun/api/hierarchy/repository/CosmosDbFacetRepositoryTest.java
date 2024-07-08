@@ -34,11 +34,6 @@ class CosmosDbFacetRepositoryTest {
     @Mock
     private CosmosPagedIterable<JsonNode> cosmosPagedIterable;
 
-    @Mock
-    private CosmosPagedIterable<JsonNode> cosmosPagedIterable1;
-
-    @Mock
-    private CosmosPagedIterable<JsonNode> cosmosPagedIterable2;
 
     private CosmosDbFacetRepository facetRepository;
 

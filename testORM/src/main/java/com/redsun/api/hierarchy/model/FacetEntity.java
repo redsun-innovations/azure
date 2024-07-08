@@ -8,10 +8,11 @@ import java.util.List;
 
 @Container(containerName = "Users")  // Replace with your container name
 public class FacetEntity {
-//    @Id
-//    private String id;
+    @Id
+    private int id;
     @PartitionKey
     private String pk;
+
     private String facetType;
     private String facetValue;
     private String base36Id;
@@ -21,6 +22,24 @@ public class FacetEntity {
     private int pageSize;
     private List<String> data;
 
+
+    public FacetEntity (int id, String pk, String facetType, String facetValue, String base36Id, String facetTypebase36Id){
+        this.id = id;
+        this.pk = pk;
+        this.facetType = facetType;
+        this.facetValue = facetValue;
+        this.base36Id = base36Id;
+        this.facetTypebase36Id = facetTypebase36Id;
+    }
+
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = Integer.parseInt(id);
+    }
 
     public String getPk() {
         return pk;

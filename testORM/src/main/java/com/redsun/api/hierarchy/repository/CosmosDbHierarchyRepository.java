@@ -1,18 +1,13 @@
 package com.redsun.api.hierarchy.repository;
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.models.CosmosQueryRequestOptions;
-import com.azure.cosmos.util.CosmosPagedIterable;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redsun.api.hierarchy.constant.Const;
 import com.redsun.api.hierarchy.model.HierarchyEntity;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -20,10 +15,10 @@ import java.util.stream.Collectors;
  * This repository provides methods to fetch hierarchy data, including class codes and hierarchical relationships.
  */
 @Repository
-public class CosmosDbHierarchyRepository implements HierarchyRepository {
+public class CosmosDbHierarchyRepository {
     private final CosmosContainer container;
     private final ObjectMapper objectMapper;
-    private final CosmosHierarchyRepositoryExtends repository;
+    private final HierarchyRepository hierarchyRepository;
 
     /**
      * Constructs a new instance of {@code CosmosDbHierarchyRepository} with the specified {@code CosmosContainer}.
@@ -31,11 +26,11 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
      * @param container the CosmosContainer instance to be used for querying the database
      */
 
-    public CosmosDbHierarchyRepository(CosmosContainer container, CosmosHierarchyRepositoryExtends repository) {
+    public CosmosDbHierarchyRepository(CosmosContainer container, HierarchyRepository hierarchyRepository) {
         this.container = container;
         this.objectMapper = new ObjectMapper();
 
-        this.repository = repository;
+        this.hierarchyRepository = hierarchyRepository;
     }
 
     /**
@@ -47,15 +42,13 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
 
 
     public List<Map<String, Object>> fetchClassCodeData(String classCode) {
-//        String query = "SELECT c.displayName, c.base36Id, c.path, c.classCode FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC";
 
-        List<HierarchyEntity> query = repository.fetchByClassCodeData(classCode);
-        CosmosPagedIterable<JsonNode> queryResults = container.queryItems(query.toString(), new CosmosQueryRequestOptions(), JsonNode.class);
+        List<HierarchyEntity> entities = hierarchyRepository.fetchClassCodeData(classCode);
 
+        // Convert the list of entities to a list of maps
         List<Map<String, Object>> items = new ArrayList<>();
-
-        for (JsonNode item : queryResults) {
-            Map<String, Object> itemMap = objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {});
+        for (HierarchyEntity entity : entities) {
+            Map<String, Object> itemMap = objectMapper.convertValue(entity, new TypeReference<Map<String, Object>>() {});
             items.add(itemMap);
         }
 
@@ -193,15 +186,11 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
 
     public List<Map<String, Object>> fetchAllHierarchyData() {
 
-        String query ="SELECT c.displayName, c.base36Id, c.path FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC";
-
-
-        CosmosPagedIterable<JsonNode> queryResults = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
+        List<HierarchyEntity> entities = hierarchyRepository.fetchAllHierarchyData();
 
         List<Map<String, Object>> items = new ArrayList<>();
-
-        for (JsonNode item : queryResults) {
-            Map<String, Object> itemMap = objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {});
+        for (HierarchyEntity entity : entities) {
+            Map<String, Object> itemMap = objectMapper.convertValue(entity, new TypeReference<Map<String, Object>>() {});
             items.add(itemMap);
         }
 
@@ -292,25 +281,15 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
      * @param avoidDuplicates a flag indicating whether to avoid duplicate entries based on class code
      * @return a list of maps, each containing class code and base36 ID retrieved from Cosmos DB
      */
-    public List<Map<String, Object>> listAllHierarchyData(List<String> classCodes, boolean avoidDuplicates) {
-        StringBuilder queryBuilder = new StringBuilder("SELECT c.classCode, c.base36Id FROM c WHERE c.pk = 'hierarchy'");
 
-        if (classCodes != null && !classCodes.isEmpty()) {
-            String classCodeFilter = classCodes.stream()
-                    .map(code -> "'" + code + "'")
-                    .collect(Collectors.joining(", "));
-            queryBuilder.append(" AND c.classCode IN (").append(classCodeFilter).append(")");
-        }
+        public List<Map<String, Object>> listAllHierarchyData(List<String> classCodes,boolean avoidDuplicates) {
+            List<HierarchyEntity> entities = hierarchyRepository.listAllHierarchyData(classCodes, avoidDuplicates);
 
-        CosmosPagedIterable<JsonNode> itemsContainer = container.queryItems(queryBuilder.toString(), new CosmosQueryRequestOptions(), JsonNode.class);
-
-        List<Map<String, Object>> items = new ArrayList<>();
-
-        for (JsonNode item : itemsContainer) {
-            Map<String, Object> itemMap = objectMapper.convertValue(item, new TypeReference<Map<String, Object>>() {});
-            items.add(itemMap);
-        }
-
+            List<Map<String, Object>> items = new ArrayList<>();
+            for (HierarchyEntity entity : entities) {
+                Map<String, Object> itemMap = objectMapper.convertValue(entity, new TypeReference<Map<String, Object>>() {});
+                items.add(itemMap);
+            }
         Map<String, String> base36IdMap = new HashMap<>();
         List<Map<String, Object>> results = new ArrayList<>();
 

@@ -13,17 +13,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Repository implementation for accessing and managing facets data stored in Azure Cosmos DB.
  * This class provides methods for searching and listing facet data.
  */
 
-@Repository
-public class CosmosDbFacetRepository implements FacetRepository {
+public class CosmosDbFacetRepository {
 
     private final CosmosContainer container;
-    private final CosmosRepositoryExtends repository;
+
 
     /**
      * Constructor for CosmosDbFacetRepository.
@@ -31,12 +31,15 @@ public class CosmosDbFacetRepository implements FacetRepository {
      * @param container the CosmosContainer instance for interacting with Azure Cosmos DB
      */
 
-    public CosmosDbFacetRepository(CosmosContainer container, CosmosRepositoryExtends repository) {
+    public CosmosDbFacetRepository(CosmosContainer container, FacetRepository repository) {
         this.container = container;
 
         this.repository = repository;
     }
 
+
+    @Autowired
+    private final FacetRepository repository;
     /**
      * Searches for facets based on the provided facet types and facet value.
      *
@@ -46,15 +49,13 @@ public class CosmosDbFacetRepository implements FacetRepository {
      */
 
     public List<Map<String, Object>> searchFacets(List<String> facetTypes, String facetValue) {
-        List<FacetEntity> facets = repository.findByFacetTypeInAndFacetValue(facetTypes, facetValue);
-//        System.out.println("facetrepository" + facets);
+//        String facetTypesCondition = facetTypes.stream()
+//                .map(facet -> "'" + facet + "'")
+//                .collect(Collectors.joining(","));
 //        String facetTypesCondition = "'" + String.join("','", facetTypes) + "'";
-//        String query = "SELECT c.facetType, c.facetTypebase36Id, c.facetValue, c.base36Id " +
-//                "FROM c " +
-//                "WHERE c.pk = 'facets' AND c.facetType IN (" + facetTypesCondition + ")";
-//        if (facetValue != null) {
-//            query += " AND c.facetValue = '" + facetValue + "'";
-//        }
+        List<FacetEntity> facets = repository.searchFacets(facetTypes, facetValue);
+
+//
         Map<String, Map<String, Object>> groupedFacets = retrieveGroupedFacets(facets.toString());
 
         ensureAllFacetTypesPresent(facetTypes, groupedFacets);
@@ -68,6 +69,7 @@ public class CosmosDbFacetRepository implements FacetRepository {
      * @param query the query to execute on the Cosmos DB
      * @return a map of grouped facets
      */
+
 
     private Map<String, Map<String, Object>> retrieveGroupedFacets(String query) {
         Map<String, Map<String, Object>> groupedFacets = new LinkedHashMap<>();
@@ -144,7 +146,7 @@ public class CosmosDbFacetRepository implements FacetRepository {
         }
 
         int offset = pageSize * (pageNumber - 1);
-        List<FacetEntity> facets = repository.findPaginatedFacets(offset, pageSize);
+        List<FacetEntity> facets = repository.listData(offset, pageSize);
         CosmosPagedIterable<JsonNode> items = container.queryItems(facets.toString(), new CosmosQueryRequestOptions(), JsonNode.class);
 
         Map<String, Map<String, Object>> groupedFacets = new LinkedHashMap<>();

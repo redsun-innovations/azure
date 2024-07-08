@@ -32,17 +32,14 @@ class CosmosDbHierarchyRepositoryTest {
     @Mock
     private CosmosPagedIterable<JsonNode> cosmosPagedIterable;
 
-    @Mock
-    private CosmosDbFacetRepository facetRepository;
-
     @InjectMocks
     private CosmosDbHierarchyRepository hierarchyRepository;
-
+zz
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        hierarchyRepository  = new CosmosDbHierarchyRepository(container);
+        hierarchyRepository  = new CosmosDbHierarchyRepository(container,hierarchyRepository);
     }
 
     @Test

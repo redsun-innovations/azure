@@ -1,31 +1,21 @@
 package com.redsun.api.hierarchy.repository;
 
+import com.azure.spring.data.cosmos.repository.CosmosRepository;
+import com.azure.spring.data.cosmos.repository.Query;
+import com.redsun.api.hierarchy.model.HierarchyEntity;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
-import java.util.Map;
 
-public interface HierarchyRepository {
+public interface HierarchyRepository extends CosmosRepository<HierarchyEntity, String> {
 
-    /**
-     * Fetches hierarchical data for a specific class code.
-     *
-     * @param classCode The class code for which hierarchical data is fetched.
-     * @return List of maps representing hierarchical data entries.
-     */
-    List<Map<String, Object>> fetchClassCodeData(String classCode);
+        @Query("SELECT * FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC")
+        List<HierarchyEntity> fetchClassCodeData(String classCode);
 
-    /**
-     * Fetches all hierarchical data entries.
-     *
-     * @return List of maps representing all hierarchical data entries.
-     */
-    List<Map<String, Object>> fetchAllHierarchyData();
+        @Query("SELECT * FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC")
+        List<HierarchyEntity> fetchAllHierarchyData();
 
-    /**
-     * Lists hierarchical data entries for specified class codes.
-     *
-     * @param classCodes      List of class codes to fetch hierarchical data for.
-     * @param avoidDuplicates Flag indicating whether to avoid duplicate entries.
-     * @return List of maps representing hierarchical data entries for the specified class codes.
-     */
-    List<Map<String, Object>> listAllHierarchyData(List<String> classCodes, boolean avoidDuplicates);
+        @Query("SELECT * FROM c WHERE c.pk = 'hierarchy' AND (IS_NULL(@classCodes) OR ARRAY_CONTAINS(@classCodes, c.classCode))")
+        List<HierarchyEntity> listAllHierarchyData(@Param("classCodes") List<String> classCodes, boolean avoidDuplicates);
+
 }
