@@ -15,6 +15,10 @@ public class Const {
         public static final String CLASSCODE = "classCode";
         public static final String PARENTBASE36ID = "parentBase36Id";
         public static final String HIERARCHYVALUES = "hierarchyValues";
+        public static final String ERROR = "error";
+
+        public static final int DEFAULTPAGENUMBER = 1;
+        public static final int DEFAULTPAGESIZE = 200;
 
         /**
          * Private constructor to prevent instantiation of this constant class.

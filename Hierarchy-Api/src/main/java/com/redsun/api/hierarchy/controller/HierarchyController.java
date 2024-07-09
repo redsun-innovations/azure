@@ -1,9 +1,12 @@
 package com.redsun.api.hierarchy.controller;
 
 import com.redsun.api.hierarchy.service.HierarchyService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +18,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v1/hierarchy")
 public class HierarchyController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HierarchyController.class);
     private final HierarchyService hierarchyService;
 
     /**
@@ -35,12 +40,18 @@ public class HierarchyController {
      */
     @GetMapping("/class-code/{classCode}")
     public List<Map<String, Object>> fetchClassCodeData(@PathVariable String classCode) {
-        return hierarchyService.fetchClassCodeData(classCode);
+        try {
+            return hierarchyService.fetchClassCodeData(classCode);
+        } catch (Exception e) {
+            logger.error("Error occurred while fetching class code data for {}: {}", classCode, e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
+
     /**
      * Retrieves hierarchy data based on the provided class code and duplication preference.
      *
-     * @param classCode the class code to filter hierarchy data (optional)
+     * @param classCode       the class code to filter hierarchy data (optional)
      * @param avoidDuplicates whether to avoid duplicate entries (default is true)
      * @return a list of maps containing the hierarchy data
      */
@@ -49,6 +60,12 @@ public class HierarchyController {
     public List<Map<String, Object>> getHierarchyData(
             @RequestParam(required = false) String classCode,
             @RequestParam(required = false, defaultValue = "true") boolean avoidDuplicates) {
-        return hierarchyService.getHierarchyData(classCode, avoidDuplicates);
+        try {
+            return hierarchyService.getHierarchyData(classCode, avoidDuplicates);
+        } catch (Exception e) {
+            logger.error("Error occurred while retrieving hierarchy data: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
+
 }

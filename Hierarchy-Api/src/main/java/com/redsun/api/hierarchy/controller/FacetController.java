@@ -2,12 +2,15 @@ package com.redsun.api.hierarchy.controller;
 
 import com.redsun.api.hierarchy.service.FacetService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +23,7 @@ import java.util.Map;
 @RequestMapping("/v1/facets")
 public class FacetController {
 
+    private static final Logger logger = LoggerFactory.getLogger(FacetController.class);
     private final FacetService facetService;
 
     /**
@@ -45,14 +49,19 @@ public class FacetController {
     public List<Map<String, Object>> searchFacets(
             @RequestParam(value = "facetType", required = false) List<String> facetTypes,
             @RequestParam(value = "facetValue", required = false) String facetValue) {
-        return facetService.searchFacets(facetTypes, facetValue);
+        try {
+            return facetService.searchFacets(facetTypes, facetValue);
+        } catch (Exception e) {
+            logger.error("Error occurred while searching facets", e);
+            return Collections.emptyList();
+        }
     }
 
     /**
      * Lists facet data with pagination support.
      *
      * @param pageNumber the page number to retrieve (default is 1)
-     * @param pageSize the number of items per page (default is 200)
+     * @param pageSize   the number of items per page (default is 200)
      * @return a map containing the paginated facet data
      */
 
@@ -60,8 +69,11 @@ public class FacetController {
     public Map<String, Object> listData(
             @RequestParam(value = "pageNumber", defaultValue = "1") int pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "200") int pageSize) {
-        return facetService.listData(pageNumber, pageSize);
+        try {
+            return facetService.listData(pageNumber, pageSize);
+        } catch (Exception e) {
+            logger.error("Error occurred while listing facet data: {}", e.getMessage(), e);
+            return Collections.emptyMap();
+        }
     }
-
-
 }

@@ -27,6 +27,30 @@ class HierarchyServiceTest {
     }
 
     @Test
+    void testFetchClassCodeDataWithNullClassCode() {
+        String classCode = null;
+
+        List<Map<String, Object>> response = hierarchyService.fetchClassCodeData(classCode);
+
+        Map<String, Object> expectedResponse = new HashMap<>();
+        expectedResponse.put("error", "ClassCodes list is not provided");
+
+        assertEquals(Collections.singletonList(expectedResponse), response);
+    }
+
+    @Test
+    void testFetchClassCodeDataWithEmptyClassCode() {
+        String classCode = "";
+
+        List<Map<String, Object>> response = hierarchyService.fetchClassCodeData(classCode);
+
+        Map<String, Object> expectedResponse = new HashMap<>();
+        expectedResponse.put("error", "ClassCodes list is not provided");
+
+        assertEquals(Collections.singletonList(expectedResponse), response);
+    }
+
+    @Test
     void testFetchClassCodeData() {
         String classCode = "H157";
 

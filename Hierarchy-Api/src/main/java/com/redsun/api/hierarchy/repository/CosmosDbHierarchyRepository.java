@@ -7,7 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redsun.api.hierarchy.constant.Const;
 import org.springframework.stereotype.Repository;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,9 @@ import java.util.stream.Collectors;
  */
 @Repository
 public class CosmosDbHierarchyRepository implements HierarchyRepository {
+
+    private static final Logger logger = LoggerFactory.getLogger(CosmosDbHierarchyRepository.class);
+
     private final CosmosContainer container;
     private final ObjectMapper objectMapper;
 
@@ -41,36 +45,44 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
 
 
     public List<Map<String, Object>> fetchClassCodeData(String classCode) {
-        String query = "SELECT c.displayName, c.base36Id, c.path, c.classCode FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC";
+        try {
 
-        CosmosPagedIterable<JsonNode> queryResults = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
+            String query = "SELECT c.displayName, c.base36Id, c.path, c.classCode FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC";
 
-        List<Map<String, Object>> items = new ArrayList<>();
+            CosmosPagedIterable<JsonNode> queryResults = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
 
-        for (JsonNode item : queryResults) {
-            Map<String, Object> itemMap = objectMapper.convertValue(item, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
-            items.add(itemMap);
+            List<Map<String, Object>> items = new ArrayList<>();
+
+            for (JsonNode item : queryResults) {
+                Map<String, Object> itemMap = objectMapper.convertValue(item, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                });
+                items.add(itemMap);
+            }
+
+
+            Map<String, Map<String, Object>> classCodeToHierarchy = new HashMap<>();
+            Map<String, String> displayNameToBase36Id = mapDisplayNameToBase36Id(items);
+
+            boolean classCodeFound = items.stream()
+                    .anyMatch(item -> classCode.equals(item.get(Const.CLASSCODE)));
+
+            List<Map<String, Object>> response = new ArrayList<>();
+
+            if (!classCodeFound) {
+                response.add(placeholderEntry(classCode));
+            }
+
+            processItemsForHierarchy(items, classCode, displayNameToBase36Id, classCodeToHierarchy);
+
+            response.addAll(classCodeToHierarchy.values());
+
+            return response;
+        } catch (Exception e) {
+            logger.error("Error fetching class code data for classCode {}: {}", classCode, e.getMessage(), e);
+            return Collections.emptyList();
         }
-
-
-        Map<String, Map<String, Object>> classCodeToHierarchy = new HashMap<>();
-        Map<String, String> displayNameToBase36Id = mapDisplayNameToBase36Id(items);
-
-        boolean classCodeFound = items.stream()
-                .anyMatch(item -> classCode.equals(item.get(Const.CLASSCODE)));
-
-        List<Map<String, Object>> response = new ArrayList<>();
-
-        if (!classCodeFound) {
-            response.add(placeholderEntry(classCode));
-        }
-
-        processItemsForHierarchy(items, classCode, displayNameToBase36Id, classCodeToHierarchy);
-
-        response.addAll(classCodeToHierarchy.values());
-
-        return response;
     }
+
     /**
      * Maps display names to base36 IDs from the given list of items.
      *
@@ -80,13 +92,18 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
 
 
     private Map<String, String> mapDisplayNameToBase36Id(List<Map<String, Object>> items) {
-        Map<String, String> displayNameToBase36Id = new HashMap<>();
-        items.forEach(item -> {
-            String displayName = (String) item.get(Const.DISPLAYNAME);
-            String base36Id = (String) item.get(Const.BASE36ID);
-            displayNameToBase36Id.put(displayName, base36Id);
-        });
-        return displayNameToBase36Id;
+        try {
+            Map<String, String> displayNameToBase36Id = new HashMap<>();
+            items.forEach(item -> {
+                String displayName = (String) item.get(Const.DISPLAYNAME);
+                String base36Id = (String) item.get(Const.BASE36ID);
+                displayNameToBase36Id.put(displayName, base36Id);
+            });
+            return displayNameToBase36Id;
+        } catch (Exception e) {
+            logger.error("Error mapping display names to base36 IDs: {}", e.getMessage(), e);
+            return Collections.emptyMap();
+        }
     }
 
     /**
@@ -97,53 +114,62 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
      */
 
     private Map<String, Object> placeholderEntry(String classCode) {
-        Map<String, Object> classCodeEntry = new HashMap<>();
-        classCodeEntry.put(Const.CLASSCODE, classCode);
-        classCodeEntry.put(Const.DISPLAYNAME, null);
+        try {
+            Map<String, Object> classCodeEntry = new HashMap<>();
+            classCodeEntry.put(Const.CLASSCODE, classCode);
+            classCodeEntry.put(Const.DISPLAYNAME, null);
 
-        Map<String, Object> hierarchyItem = new HashMap<>();
-        hierarchyItem.put("path", null);
-        hierarchyItem.put(Const.PARENTBASE36ID, "null");
-        hierarchyItem.put(Const.BASE36ID, "null");
+            Map<String, Object> hierarchyItem = new HashMap<>();
+            hierarchyItem.put("path", null);
+            hierarchyItem.put(Const.PARENTBASE36ID, "null");
+            hierarchyItem.put(Const.BASE36ID, "null");
 
-        List<Map<String, Object>> hierarchyValues = new ArrayList<>();
-        hierarchyValues.add(hierarchyItem);
+            List<Map<String, Object>> hierarchyValues = new ArrayList<>();
+            hierarchyValues.add(hierarchyItem);
 
-        classCodeEntry.put(Const.HIERARCHYVALUES, hierarchyValues);
+            classCodeEntry.put(Const.HIERARCHYVALUES, hierarchyValues);
 
-        return classCodeEntry;
+            return classCodeEntry;
+        } catch (Exception e) {
+            logger.error("Error creating placeholder entry for classCode {}: {}", classCode, e.getMessage(), e);
+            return Collections.emptyMap();
+        }
     }
 
     /**
      * Processes the list of items to build a hierarchy structure for the specified class code.
      *
-     * @param items                  the list of items to process
-     * @param classCode              the class code for which to build the hierarchy
-     * @param displayNameToBase36Id  a map of display names to base36 IDs
-     * @param classCodeToHierarchy   a map to store the hierarchy structure for each class code
+     * @param items                 the list of items to process
+     * @param classCode             the class code for which to build the hierarchy
+     * @param displayNameToBase36Id a map of display names to base36 IDs
+     * @param classCodeToHierarchy  a map to store the hierarchy structure for each class code
      */
     private void processItemsForHierarchy(List<Map<String, Object>> items, String classCode, Map<String, String> displayNameToBase36Id, Map<String, Map<String, Object>> classCodeToHierarchy) {
-        items.stream()
-                .filter(item -> classCode.equals(item.get(Const.CLASSCODE)))
-                .forEach(item -> {
-                    String displayName = (String) item.get(Const.DISPLAYNAME);
-                    String base36Id = (String) item.get(Const.BASE36ID);
-                    String path = (String) item.get("path");
+        try {
+            items.stream()
+                    .filter(item -> classCode.equals(item.get(Const.CLASSCODE)))
+                    .forEach(item -> {
+                        String displayName = (String) item.get(Const.DISPLAYNAME);
+                        String base36Id = (String) item.get(Const.BASE36ID);
+                        String path = (String) item.get("path");
 
-                    Map<String, Object> hierarchyItem = new HashMap<>();
-                    hierarchyItem.put("path", path);
-                    hierarchyItem.put(Const.BASE36ID, base36Id);
-                    hierarchyItem.put(Const.PARENTBASE36ID, computeParentBase36Id(path, displayNameToBase36Id));
+                        Map<String, Object> hierarchyItem = new HashMap<>();
+                        hierarchyItem.put("path", path);
+                        hierarchyItem.put(Const.BASE36ID, base36Id);
+                        hierarchyItem.put(Const.PARENTBASE36ID, computeParentBase36Id(path, displayNameToBase36Id));
 
-                    if (!classCodeToHierarchy.containsKey(classCode)) {
-                        Map<String, Object> classCodeEntry = new HashMap<>();
-                        classCodeEntry.put(Const.CLASSCODE, classCode);
-                        classCodeEntry.put(Const.DISPLAYNAME, displayName);
-                        classCodeEntry.put(Const.HIERARCHYVALUES, new ArrayList<>());
-                        classCodeToHierarchy.put(classCode, classCodeEntry);
-                    }
-                    ((List<Map<String, Object>>) classCodeToHierarchy.get(classCode).get(Const.HIERARCHYVALUES)).add(hierarchyItem);
-                });
+                        if (!classCodeToHierarchy.containsKey(classCode)) {
+                            Map<String, Object> classCodeEntry = new HashMap<>();
+                            classCodeEntry.put(Const.CLASSCODE, classCode);
+                            classCodeEntry.put(Const.DISPLAYNAME, displayName);
+                            classCodeEntry.put(Const.HIERARCHYVALUES, new ArrayList<>());
+                            classCodeToHierarchy.put(classCode, classCodeEntry);
+                        }
+                        ((List<Map<String, Object>>) classCodeToHierarchy.get(classCode).get(Const.HIERARCHYVALUES)).add(hierarchyItem);
+                    });
+        } catch (Exception e) {
+            logger.error("Error processing items for hierarchy for classCode {}: {}", classCode, e.getMessage(), e);
+        }
     }
 
     /**
@@ -155,11 +181,24 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
      */
 
     private String computeParentBase36Id(String path, Map<String, String> displayNameToBase36Id) {
-        if (path == null || path.equals("null")) {
+        try {
+            if (isNullOrEmptyPath(path)) {
+                return "null";
+            }
+
+            String[] pathParts = path.split("/");
+            return findBase36Id(pathParts, displayNameToBase36Id);
+        } catch (Exception e) {
+            logger.error("Error computing parent base36 ID for path {}: {}", path, e.getMessage(), e);
             return "null";
         }
+    }
 
-        String[] pathParts = path.split("/");
+    private boolean isNullOrEmptyPath(String path) {
+        return path == null || path.equals("null");
+    }
+
+    private String findBase36Id(String[] pathParts, Map<String, String> displayNameToBase36Id) {
         StringBuilder currentPath = new StringBuilder();
 
         for (int i = pathParts.length - 1; i >= 0; i--) {
@@ -185,25 +224,31 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
      */
 
     public List<Map<String, Object>> fetchAllHierarchyData() {
+        try {
+            String query = "SELECT c.displayName, c.base36Id, c.path FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC";
 
-        String query ="SELECT c.displayName, c.base36Id, c.path FROM c WHERE c.pk = 'hierarchy' ORDER BY c.path ASC";
 
+            CosmosPagedIterable<JsonNode> queryResults = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
 
-        CosmosPagedIterable<JsonNode> queryResults = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
+            List<Map<String, Object>> items = new ArrayList<>();
 
-        List<Map<String, Object>> items = new ArrayList<>();
+            for (JsonNode item : queryResults) {
+                Map<String, Object> itemMap = objectMapper.convertValue(item, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                });
+                items.add(itemMap);
+            }
 
-        for (JsonNode item : queryResults) {
-            Map<String, Object> itemMap = objectMapper.convertValue(item, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
-            items.add(itemMap);
+            return getParentBase36Id(items);
+        } catch (Exception e) {
+            logger.error("Error fetching all hierarchy data: {}", e.getMessage(), e);
+            return Collections.emptyList();
         }
-
-        return getParentBase36Id(items);
     }
+
 
     /**
      * Retrieves the parent base36 IDs for items in the hierarchy data.
-     *
+     * <p>
      * This method processes each item in the provided list to determine its parent in the hierarchy,
      * based on the path and displayName-to-base36Id mappings.
      *
@@ -211,52 +256,69 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
      * @return a list of maps, each containing display name, base36 ID, and parent base36 ID
      */
     private List<Map<String, Object>> getParentBase36Id(List<Map<String, Object>> items) {
-        List<Map<String, Object>> response = new ArrayList<>();
-        Map<String, String> displayNameToBase36Id = new HashMap<>();
+        try {
+            List<Map<String, Object>> response = new ArrayList<>();
+            Map<String, String> displayNameToBase36Id = new HashMap<>();
 
-        for (Map<String, Object> item : items) {
-            String displayName = (String) item.get(Const.DISPLAYNAME);
-            String base36Id = (String) item.get(Const.BASE36ID);
-            displayNameToBase36Id.put(displayName, base36Id);
+            for (Map<String, Object> item : items) {
+                String displayName = (String) item.get(Const.DISPLAYNAME);
+                String base36Id = (String) item.get(Const.BASE36ID);
+                displayNameToBase36Id.put(displayName, base36Id);
+            }
+
+            for (Map<String, Object> item : items) {
+                String displayName = (String) item.get(Const.DISPLAYNAME);
+                String base36Id = (String) item.get(Const.BASE36ID);
+                String path = (String) item.get("path");
+
+
+                Map<String, Object> responseItem = new HashMap<>();
+                responseItem.put(Const.DISPLAYNAME, displayName);
+                responseItem.put(Const.BASE36ID, base36Id);
+
+                String parentBase36Id = fetchParentBase36Id(path, displayNameToBase36Id);
+
+                responseItem.put(Const.PARENTBASE36ID, parentBase36Id);
+                response.add(responseItem);
+            }
+
+            return response;
+        } catch (Exception e) {
+            logger.error("Error getting parent base36 IDs: {}", e.getMessage(), e);
+            return Collections.emptyList();
         }
-
-        for (Map<String, Object> item : items) {
-            String displayName = (String) item.get(Const.DISPLAYNAME);
-            String base36Id = (String) item.get(Const.BASE36ID);
-            String path = (String) item.get("path");
-
-
-            Map<String, Object> responseItem = new HashMap<>();
-            responseItem.put(Const.DISPLAYNAME, displayName);
-            responseItem.put(Const.BASE36ID, base36Id);
-
-            String parentBase36Id = fetchParentBase36Id(path, displayNameToBase36Id);
-
-            responseItem.put(Const.PARENTBASE36ID, parentBase36Id);
-            response.add(responseItem);
-        }
-
-        return response;
     }
 
     /**
      * Computes the parent base36 ID based on the given path and displayName-to-base36Id mappings.
-     *
+     * <p>
      * This method recursively checks the path segments to find the closest parent with a known base36 ID.
      *
-     * @param path                 the path of the current item in the hierarchy
+     * @param path                  the path of the current item in the hierarchy
      * @param displayNameToBase36Id a map mapping display names to their corresponding base36 IDs
      * @return the parent base36 ID of the current item in the hierarchy
      */
 
     private String fetchParentBase36Id(String path, Map<String, String> displayNameToBase36Id) {
-        if (path == null || path.equals("null")) {
-            return "";
+        try {
+            if (isPathNullOrEmpty(path)) {
+                return "";
+            }
+
+            String[] pathParts = path.split("/");
+            return getBase36IdPath(pathParts, displayNameToBase36Id);
+        } catch (Exception e) {
+            logger.error("Error in fetchParentBase36Id method: {}", e.getMessage(), e);
+            return "null";
         }
+    }
 
-        String[] pathParts = path.split("/");
+    private boolean isPathNullOrEmpty(String path) {
+        return path == null || path.equals("null");
+    }
+
+    private String getBase36IdPath(String[] pathParts, Map<String, String> displayNameToBase36Id) {
         StringBuilder currentPath = new StringBuilder();
-
 
         for (int i = pathParts.length - 1; i >= 0; i--) {
             String pathSegment = pathParts[i].trim();
@@ -275,7 +337,7 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
 
     /**
      * Retrieves hierarchy data from Cosmos DB based on specified class codes.
-     *
+     * <p>
      * This method constructs a query to fetch class codes and their corresponding base36 IDs from Cosmos DB.
      * If class codes are provided, it filters the query to include only those class codes.
      * It then converts the retrieved JSON data into a list of maps containing class code and base36 ID pairs.
@@ -286,53 +348,58 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
      * @return a list of maps, each containing class code and base36 ID retrieved from Cosmos DB
      */
     public List<Map<String, Object>> listAllHierarchyData(List<String> classCodes, boolean avoidDuplicates) {
-        StringBuilder queryBuilder = new StringBuilder("SELECT c.classCode, c.base36Id FROM c WHERE c.pk = 'hierarchy'");
+        try {
+            StringBuilder queryBuilder = new StringBuilder("SELECT c.classCode, c.base36Id FROM c WHERE c.pk = 'hierarchy'");
 
-        if (classCodes != null && !classCodes.isEmpty()) {
-            String classCodeFilter = classCodes.stream()
-                    .map(code -> "'" + code + "'")
-                    .collect(Collectors.joining(", "));
-            queryBuilder.append(" AND c.classCode IN (").append(classCodeFilter).append(")");
-        }
-
-        CosmosPagedIterable<JsonNode> itemsContainer = container.queryItems(queryBuilder.toString(), new CosmosQueryRequestOptions(), JsonNode.class);
-
-        List<Map<String, Object>> items = new ArrayList<>();
-
-        for (JsonNode item : itemsContainer) {
-            Map<String, Object> itemMap = objectMapper.convertValue(item, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
-            items.add(itemMap);
-        }
-
-        Map<String, String> base36IdMap = new HashMap<>();
-        List<Map<String, Object>> results = new ArrayList<>();
-
-        items.forEach(item -> {
-            String itemClassCode = (String) item.get(Const.CLASSCODE);
-            String base36Id = (String) item.get(Const.BASE36ID);
-
-            if (avoidDuplicates && base36IdMap.containsKey(itemClassCode)) {
-                return;
+            if (classCodes != null && !classCodes.isEmpty()) {
+                String classCodeFilter = classCodes.stream()
+                        .map(code -> "'" + code + "'")
+                        .collect(Collectors.joining(", "));
+                queryBuilder.append(" AND c.classCode IN (").append(classCodeFilter).append(")");
             }
 
-            Map<String, Object> result = new HashMap<>();
-            result.put(Const.CLASSCODE, itemClassCode);
-            result.put(Const.BASE36ID, base36Id);
-            results.add(result);
+            CosmosPagedIterable<JsonNode> itemsContainer = container.queryItems(queryBuilder.toString(), new CosmosQueryRequestOptions(), JsonNode.class);
 
-            base36IdMap.put(itemClassCode, base36Id);
-        });
+            List<Map<String, Object>> items = new ArrayList<>();
 
-        for (String classCode : classCodes) {
-            if (!base36IdMap.containsKey(classCode)) {
+            for (JsonNode item : itemsContainer) {
+                Map<String, Object> itemMap = objectMapper.convertValue(item, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                });
+                items.add(itemMap);
+            }
+
+            Map<String, String> base36IdMap = new HashMap<>();
+            List<Map<String, Object>> results = new ArrayList<>();
+
+            items.forEach(item -> {
+                String itemClassCode = (String) item.get(Const.CLASSCODE);
+                String base36Id = (String) item.get(Const.BASE36ID);
+
+                if (avoidDuplicates && base36IdMap.containsKey(itemClassCode)) {
+                    return;
+                }
+
                 Map<String, Object> result = new HashMap<>();
-                result.put(Const.CLASSCODE, classCode);
-                result.put(Const.BASE36ID, null);
+                result.put(Const.CLASSCODE, itemClassCode);
+                result.put(Const.BASE36ID, base36Id);
                 results.add(result);
+
+                base36IdMap.put(itemClassCode, base36Id);
+            });
+
+            for (String classCode : classCodes) {
+                if (!base36IdMap.containsKey(classCode)) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put(Const.CLASSCODE, classCode);
+                    result.put(Const.BASE36ID, null);
+                    results.add(result);
+                }
             }
+
+            return results;
+        } catch (Exception e) {
+            logger.error("Error in listAllHierarchyData method: {}", e.getMessage(), e);
+            return Collections.emptyList(); // or handle error scenario as per your application logic
         }
-
-        return results;
     }
-
 }

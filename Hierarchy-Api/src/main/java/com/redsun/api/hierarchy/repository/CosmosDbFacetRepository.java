@@ -6,8 +6,8 @@ import com.redsun.api.hierarchy.constant.Const;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import com.fasterxml.jackson.databind.JsonNode;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -19,6 +19,8 @@ import java.util.*;
 
 @Repository
 public class CosmosDbFacetRepository implements FacetRepository {
+
+    private static final Logger logger = LoggerFactory.getLogger(CosmosDbFacetRepository.class);
 
     private final CosmosContainer container;
 
@@ -42,6 +44,7 @@ public class CosmosDbFacetRepository implements FacetRepository {
      */
 
     public List<Map<String, Object>> searchFacets(List<String> facetTypes, String facetValue) {
+        try {
         String facetTypesCondition = "'" + String.join("','", facetTypes) + "'";
         String query = "SELECT c.facetType, c.facetTypebase36Id, c.facetValue, c.base36Id " +
                 "FROM c " +
@@ -54,6 +57,10 @@ public class CosmosDbFacetRepository implements FacetRepository {
         ensureAllFacetTypesPresent(facetTypes, groupedFacets);
 
         return new ArrayList<>(groupedFacets.values());
+    } catch (Exception e) {
+            logger.error("Error in searchFacets method: {}", e.getMessage(), e);
+            return Collections.emptyList(); // or handle error scenario as per your application logic
+        }
     }
 
     /**
@@ -64,6 +71,7 @@ public class CosmosDbFacetRepository implements FacetRepository {
      */
 
     private Map<String, Map<String, Object>> retrieveGroupedFacets(String query) {
+        try {
         Map<String, Map<String, Object>> groupedFacets = new LinkedHashMap<>();
         CosmosPagedIterable<JsonNode> items = container.queryItems(query, new CosmosQueryRequestOptions(), JsonNode.class);
         Iterator<JsonNode> iterator = items.iterator();
@@ -94,6 +102,10 @@ public class CosmosDbFacetRepository implements FacetRepository {
         }
 
         return groupedFacets;
+    } catch (Exception e) {
+            logger.error("Error in retrieveGroupedFacets method: {}", e.getMessage(), e);
+            return Collections.emptyMap(); // or handle error scenario as per your application logic
+        }
     }
 
     /**
@@ -105,6 +117,7 @@ public class CosmosDbFacetRepository implements FacetRepository {
      */
 
     private void ensureAllFacetTypesPresent(List<String> facetTypes, Map<String, Map<String, Object>> groupedFacets) {
+       try {
         facetTypes.forEach(facetType -> {
             if (!groupedFacets.containsKey(facetType)) {
                 Map<String, Object> nullFacetMap = new HashMap<>();
@@ -119,7 +132,11 @@ public class CosmosDbFacetRepository implements FacetRepository {
                 groupedFacets.put(facetType, nullFacetMap);
             }
         });
+    } catch (Exception e) {
+        logger.error("Error in ensureAllFacetTypesPresent method: {}", e.getMessage(), e);
+        // Optionally rethrow or handle the exception based on your application's error handling strategy
     }
+}
 
     /**
      * Lists facet data based on the provided page number and page size.
@@ -130,11 +147,12 @@ public class CosmosDbFacetRepository implements FacetRepository {
      */
 
     public Map<String, Object> listData(Integer pageNumber, Integer pageSize) {
+        try {
         if (pageNumber == null) {
-            pageNumber = 1;
+            pageNumber = Const.DEFAULTPAGENUMBER;
         }
         if (pageSize == null) {
-            pageSize = 200;
+            pageSize = Const.DEFAULTPAGESIZE;
         }
 
         int offset = pageSize * (pageNumber - 1);
@@ -182,7 +200,10 @@ public class CosmosDbFacetRepository implements FacetRepository {
         response.put("data", results);
 
         return response;
+    } catch (Exception e) {
+        logger.error("Error in listData method: {}", e.getMessage(), e);
+        // Optionally rethrow or handle the exception based on your application's error handling strategy
+        return Collections.emptyMap(); // Or handle the error with appropriate response
+        }
     }
-
-
 }
