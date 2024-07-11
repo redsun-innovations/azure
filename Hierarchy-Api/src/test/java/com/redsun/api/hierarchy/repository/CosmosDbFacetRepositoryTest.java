@@ -241,5 +241,7 @@ class CosmosDbFacetRepositoryTest {
         assertEquals("Dell", facetValues.get(0).get(ConstantTest.FACETVALUE));
         assertEquals("8d", facetValues.get(0).get(ConstantTest.FACETBASE36ID));
     }
+
+    
 }
 

@@ -2,7 +2,7 @@ package com.redsun.api.hierarchy.repository;
 
 
 import com.azure.cosmos.CosmosContainer;
-import com.redsun.api.hierarchy.constant.Const;
+import com.redsun.api.hierarchy.constant.Constant;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -59,7 +59,7 @@ public class CosmosDbFacetRepository implements FacetRepository {
         return new ArrayList<>(groupedFacets.values());
     } catch (Exception e) {
             logger.error("Error in searchFacets method: {}", e.getMessage(), e);
-            return Collections.emptyList(); // or handle error scenario as per your application logic
+            return Collections.emptyList();
         }
     }
 
@@ -79,24 +79,24 @@ public class CosmosDbFacetRepository implements FacetRepository {
         while (iterator.hasNext()) {
             JsonNode item = iterator.next();
 
-            String facetType = item.has(Const.FACETTYPE) ? item.get(Const.FACETTYPE).asText() : null;
-            String facetTypeBase36Id = item.has(Const.FACETTYPEBASE36ID) ? item.get(Const.FACETTYPEBASE36ID).asText() : null;
-            String facetValueText = item.has(Const.FACETVALUE) ? item.get(Const.FACETVALUE).asText() : null;
-            String base36Id = item.has(Const.FACETBASE36ID) ? item.get(Const.FACETBASE36ID).asText() : null;
+            String facetType = item.has(Constant.FACETTYPE) ? item.get(Constant.FACETTYPE).asText() : null;
+            String facetTypeBase36Id = item.has(Constant.FACETTYPEBASE36ID) ? item.get(Constant.FACETTYPEBASE36ID).asText() : null;
+            String facetValueText = item.has(Constant.FACETVALUE) ? item.get(Constant.FACETVALUE).asText() : null;
+            String base36Id = item.has(Constant.FACETBASE36ID) ? item.get(Constant.FACETBASE36ID).asText() : null;
 
             Map<String, Object> facetMap = groupedFacets.computeIfAbsent(facetType, key -> {
                 Map<String, Object> newFacetMap = new HashMap<>();
-                newFacetMap.put(Const.FACETTYPE, facetType);
-                newFacetMap.put(Const.FACETTYPEBASE36ID, facetTypeBase36Id);
-                newFacetMap.put(Const.FACETVALUES, new ArrayList<Map<String, Object>>());
+                newFacetMap.put(Constant.FACETTYPE, facetType);
+                newFacetMap.put(Constant.FACETTYPEBASE36ID, facetTypeBase36Id);
+                newFacetMap.put(Constant.FACETVALUES, new ArrayList<Map<String, Object>>());
                 return newFacetMap;
             });
 
             if (facetType != null) {
                 Map<String, Object> facetValueMap = new HashMap<>();
-                facetValueMap.put(Const.FACETVALUE, facetValueText);
-                facetValueMap.put(Const.FACETBASE36ID, base36Id);
-                List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get(Const.FACETVALUES);
+                facetValueMap.put(Constant.FACETVALUE, facetValueText);
+                facetValueMap.put(Constant.FACETBASE36ID, base36Id);
+                List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get(Constant.FACETVALUES);
                 facetValues.add(facetValueMap);
             }
         }
@@ -104,7 +104,7 @@ public class CosmosDbFacetRepository implements FacetRepository {
         return groupedFacets;
     } catch (Exception e) {
             logger.error("Error in retrieveGroupedFacets method: {}", e.getMessage(), e);
-            return Collections.emptyMap(); // or handle error scenario as per your application logic
+            return Collections.emptyMap();
         }
     }
 
@@ -121,20 +121,20 @@ public class CosmosDbFacetRepository implements FacetRepository {
         facetTypes.forEach(facetType -> {
             if (!groupedFacets.containsKey(facetType)) {
                 Map<String, Object> nullFacetMap = new HashMap<>();
-                nullFacetMap.put(Const.FACETTYPE, facetType);
-                nullFacetMap.put(Const.FACETTYPEBASE36ID, null);
+                nullFacetMap.put(Constant.FACETTYPE, facetType);
+                nullFacetMap.put(Constant.FACETTYPEBASE36ID, null);
                 List<Map<String, Object>> nullFacetValues = new ArrayList<>();
                 Map<String, Object> nullFacetValueMap = new HashMap<>();
-                nullFacetValueMap.put(Const.FACETVALUE, null);
-                nullFacetValueMap.put(Const.FACETBASE36ID, null);
+                nullFacetValueMap.put(Constant.FACETVALUE, null);
+                nullFacetValueMap.put(Constant.FACETBASE36ID, null);
                 nullFacetValues.add(nullFacetValueMap);
-                nullFacetMap.put(Const.FACETVALUES, nullFacetValues);
+                nullFacetMap.put(Constant.FACETVALUES, nullFacetValues);
                 groupedFacets.put(facetType, nullFacetMap);
             }
         });
     } catch (Exception e) {
         logger.error("Error in ensureAllFacetTypesPresent method: {}", e.getMessage(), e);
-        // Optionally rethrow or handle the exception based on your application's error handling strategy
+
     }
 }
 
@@ -149,10 +149,10 @@ public class CosmosDbFacetRepository implements FacetRepository {
     public Map<String, Object> listData(Integer pageNumber, Integer pageSize) {
         try {
         if (pageNumber == null) {
-            pageNumber = Const.DEFAULTPAGENUMBER;
+            pageNumber = Constant.DEFAULTPAGENUMBER;
         }
         if (pageSize == null) {
-            pageSize = Const.DEFAULTPAGESIZE;
+            pageSize = Constant.DEFAULTPAGESIZE;
         }
 
         int offset = pageSize * (pageNumber - 1);
@@ -165,10 +165,10 @@ public class CosmosDbFacetRepository implements FacetRepository {
         while(iterator.hasNext()){
             JsonNode item = iterator.next();
 
-            String facetType = item.has(Const.FACETTYPE) ? item.get(Const.FACETTYPE).asText() : null;
-            String facetTypebase36Id = item.has(Const.FACETTYPEBASE36ID) ? item.get(Const.FACETTYPEBASE36ID).asText() : null;
-            String facetValueText = item.has(Const.FACETVALUE) ? item.get(Const.FACETVALUE).asText() : null;
-            String base36Id = item.has(Const.FACETBASE36ID) ? item.get(Const.FACETBASE36ID).asText() : null;
+            String facetType = item.has(Constant.FACETTYPE) ? item.get(Constant.FACETTYPE).asText() : null;
+            String facetTypebase36Id = item.has(Constant.FACETTYPEBASE36ID) ? item.get(Constant.FACETTYPEBASE36ID).asText() : null;
+            String facetValueText = item.has(Constant.FACETVALUE) ? item.get(Constant.FACETVALUE).asText() : null;
+            String base36Id = item.has(Constant.FACETBASE36ID) ? item.get(Constant.FACETBASE36ID).asText() : null;
 
             String uniqueKey = facetType + "-" + facetTypebase36Id;
 
@@ -177,17 +177,17 @@ public class CosmosDbFacetRepository implements FacetRepository {
                 facetMap = groupedFacets.get(uniqueKey);
             } else {
                 facetMap = new HashMap<>();
-                facetMap.put(Const.FACETTYPE, facetType);
-                facetMap.put(Const.FACETTYPEBASE36ID, facetTypebase36Id);
-                facetMap.put(Const.FACETVALUES, new ArrayList<Map<String, Object>>());
+                facetMap.put(Constant.FACETTYPE, facetType);
+                facetMap.put(Constant.FACETTYPEBASE36ID, facetTypebase36Id);
+                facetMap.put(Constant.FACETVALUES, new ArrayList<Map<String, Object>>());
                 groupedFacets.put(uniqueKey, facetMap);
             }
 
             Map<String, Object> facetValueMap = new HashMap<>();
-            facetValueMap.put(Const.FACETVALUE, facetValueText);
-            facetValueMap.put(Const.FACETBASE36ID, base36Id);
+            facetValueMap.put(Constant.FACETVALUE, facetValueText);
+            facetValueMap.put(Constant.FACETBASE36ID, base36Id);
 
-            List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get(Const.FACETVALUES);
+            List<Map<String, Object>> facetValues = (List<Map<String, Object>>) facetMap.get(Constant.FACETVALUES);
             facetValues.add(facetValueMap);
         }
 
@@ -202,8 +202,7 @@ public class CosmosDbFacetRepository implements FacetRepository {
         return response;
     } catch (Exception e) {
         logger.error("Error in listData method: {}", e.getMessage(), e);
-        // Optionally rethrow or handle the exception based on your application's error handling strategy
-        return Collections.emptyMap(); // Or handle the error with appropriate response
+        return Collections.emptyMap();
         }
     }
 }

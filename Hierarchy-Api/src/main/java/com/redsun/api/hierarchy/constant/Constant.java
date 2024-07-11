@@ -4,7 +4,7 @@ package com.redsun.api.hierarchy.constant;
  * This class contains constant values used in the hierarchy API.
  * These constants represent keys used for various facets and hierarchy values.
  */
-public class Const {
+public class Constant {
         public static final String FACETTYPE = "facetType";
         public static final String FACETVALUE = "facetValue";
         public static final String FACETTYPEBASE36ID = "facetTypebase36Id";

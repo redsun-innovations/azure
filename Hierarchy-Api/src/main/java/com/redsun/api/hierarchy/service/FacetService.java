@@ -1,6 +1,6 @@
 package com.redsun.api.hierarchy.service;
 
-import com.redsun.api.hierarchy.constant.Const;
+import com.redsun.api.hierarchy.constant.Constant;
 import com.redsun.api.hierarchy.repository.FacetRepository;
 
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class FacetService {
 
         if (facetTypes == null || facetTypes.isEmpty()) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put(Const.ERROR, "The query parameter facetType is missing");
+            errorResponse.put(Constant.ERROR, "The query parameter facetType is missing");
             response.add(errorResponse);
             return response;
         }
@@ -58,16 +58,16 @@ public class FacetService {
 
             for (Map<String, Object> facet : facets) {
                 Map<String, Object> formattedFacet = new HashMap<>();
-                formattedFacet.put(Const.FACETTYPE, facet.get(Const.FACETTYPE));
-                formattedFacet.put(Const.FACETTYPEBASE36ID, facet.get(Const.FACETTYPEBASE36ID));
-                formattedFacet.put(Const.FACETVALUES, facet.get(Const.FACETVALUES));
+                formattedFacet.put(Constant.FACETTYPE, facet.get(Constant.FACETTYPE));
+                formattedFacet.put(Constant.FACETTYPEBASE36ID, facet.get(Constant.FACETTYPEBASE36ID));
+                formattedFacet.put(Constant.FACETVALUES, facet.get(Constant.FACETVALUES));
 
                 response.add(formattedFacet);
             }
         } catch (Exception e) {
             logger.error("Error occurred while searching facets: {}", e.getMessage(), e);
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put(Const.ERROR, "An error occurred while fetching facets. Please try again later.");
+            errorResponse.put(Constant.ERROR, "An error occurred while fetching facets. Please try again later.");
             response.add(errorResponse);
         }
 
@@ -89,7 +89,7 @@ public class FacetService {
         try {
             Map<String, Object> data = facetRepository.listData(pageNumber, pageSize);
             int count = (int) data.getOrDefault("count", 0);
-            int calculatedPageSize = (int) data.getOrDefault("pageSize", Const.DEFAULTPAGESIZE);
+            int calculatedPageSize = (int) data.getOrDefault("pageSize", Constant.DEFAULTPAGESIZE);
 
             response.put("pageNumber", pageNumber);
             response.put("count", count);
@@ -98,7 +98,7 @@ public class FacetService {
         } catch (Exception e) {
             logger.error("Error occurred while listing data: {}", e.getMessage(), e);
             response.clear();
-            response.put(Const.ERROR, "An error occurred while fetching data. Please try again later.");
+            response.put(Constant.ERROR, "An error occurred while fetching data. Please try again later.");
         }
         return response;
     }

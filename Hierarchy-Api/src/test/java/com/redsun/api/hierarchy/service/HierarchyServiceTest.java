@@ -1,5 +1,6 @@
 package com.redsun.api.hierarchy.service;
 
+import com.redsun.api.hierarchy.constant.Const;
 import com.redsun.api.hierarchy.constant.ConstantTest;
 import com.redsun.api.hierarchy.repository.HierarchyRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +11,11 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.*;
 
+import static com.jayway.jsonpath.internal.path.PathCompiler.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 class HierarchyServiceTest {
@@ -28,6 +33,7 @@ class HierarchyServiceTest {
 
     @Test
     void testFetchClassCodeDataWithNullClassCode() {
+        try {
         String classCode = null;
 
         List<Map<String, Object>> response = hierarchyService.fetchClassCodeData(classCode);
@@ -36,10 +42,15 @@ class HierarchyServiceTest {
         expectedResponse.put("error", "ClassCodes list is not provided");
 
         assertEquals(Collections.singletonList(expectedResponse), response);
+    }catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     @Test
     void testFetchClassCodeDataWithEmptyClassCode() {
+        try {
         String classCode = "";
 
         List<Map<String, Object>> response = hierarchyService.fetchClassCodeData(classCode);
@@ -48,10 +59,15 @@ class HierarchyServiceTest {
         expectedResponse.put("error", "ClassCodes list is not provided");
 
         assertEquals(Collections.singletonList(expectedResponse), response);
+    }catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     @Test
     void testFetchClassCodeData() {
+        try {
         String classCode = "H157";
 
         List<Map<String, Object>> mockResponse = new ArrayList<>();
@@ -80,11 +96,15 @@ class HierarchyServiceTest {
         List<Map<String, Object>> response = hierarchyService.fetchClassCodeData(classCode);
 
         assertEquals(mockResponse, response);
+    }catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     @Test
     void testGetHierarchyDataWithClassCode() {
-
+        try {
         List<String> classCodes = Arrays.asList("0010", "1157", "F506");
         boolean avoidDuplicates = true;
 
@@ -110,10 +130,15 @@ class HierarchyServiceTest {
         List<Map<String, Object>> response = hierarchyService.getHierarchyData(String.join(",", classCodes), avoidDuplicates);
 
         assertEquals(mockResponse, response);
+    }catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     @Test
     void testGetHierarchyDataWithoutClassCode() {
+        try {
         String classCode = null;
         boolean avoidDuplicates = true;
 
@@ -130,5 +155,42 @@ class HierarchyServiceTest {
         List<Map<String, Object>> response = hierarchyService.getHierarchyData(classCode, avoidDuplicates);
 
         assertEquals(mockResponse, response);
+    }catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void testFetchClassCodeDataException() {
+        try {
+            String classCode = "0010";
+            when(hierarchyRepository.fetchClassCodeData(classCode)).thenThrow(new RuntimeException("Error"));
+
+            List<Map<String, Object>> result = hierarchyService.fetchClassCodeData(classCode);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("An error occurred while fetching class code data. Please try again later.", result.get(0).get(Const.ERROR));
+        } catch (Exception e) {
+            fail("Exception thrown during test: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void testGetHierarchyDataException() {
+        try {
+            String classCode = "sampleCode";
+            boolean avoidDuplicates = true;
+            when(hierarchyRepository.listAllHierarchyData(anyList(), eq(avoidDuplicates))).thenThrow(new RuntimeException("Error"));
+
+            List<Map<String, Object>> result = hierarchyService.getHierarchyData(classCode, avoidDuplicates);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("An error occurred while fetching hierarchy data. Please try again later.", result.get(0).get(Const.ERROR));
+        } catch (Exception e) {
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 }

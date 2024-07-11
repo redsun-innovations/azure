@@ -1,6 +1,6 @@
 package com.redsun.api.hierarchy.service;
 
-import com.redsun.api.hierarchy.constant.Const;
+import com.redsun.api.hierarchy.constant.Constant;
 import com.redsun.api.hierarchy.repository.HierarchyRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ public class HierarchyService {
     private final HierarchyRepository hierarchyRepository;
 
     /**
-     * Constructor for HierarchyService.
+     * Constantructor for HierarchyService.
      * <p>
      * Initializes the service with the given HierarchyRepository.
      *
@@ -49,7 +49,7 @@ public class HierarchyService {
         try {
             if (classCode == null || classCode.isEmpty()) {
                 Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put(Const.ERROR, "ClassCodes list is not provided");
+                errorResponse.put(Constant.ERROR, "ClassCodes list is not provided");
                 response.add(errorResponse);
                 return response;
             }
@@ -58,7 +58,7 @@ public class HierarchyService {
         } catch (Exception e) {
             logger.error("Error occurred while fetching class code data: {}", e.getMessage(), e);
             response.clear();
-            response.add(Collections.singletonMap(Const.ERROR, "An error occurred while fetching class code data. Please try again later."));
+            response.add(Collections.singletonMap(Constant.ERROR, "An error occurred while fetching class code data. Please try again later."));
 
             return response;
         }
@@ -89,7 +89,7 @@ public class HierarchyService {
         } catch (Exception e) {
             logger.error("Error occurred while fetching hierarchy data: {}", e.getMessage(), e);
             response.clear();
-            response.add(Collections.singletonMap(Const.ERROR, "An error occurred while fetching hierarchy data. Please try again later."));
+            response.add(Collections.singletonMap(Constant.ERROR, "An error occurred while fetching hierarchy data. Please try again later."));
 
             return response;
         }

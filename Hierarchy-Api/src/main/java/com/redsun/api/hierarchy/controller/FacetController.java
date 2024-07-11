@@ -49,8 +49,11 @@ public class FacetController {
     public List<Map<String, Object>> searchFacets(
             @RequestParam(value = "facetType", required = false) List<String> facetTypes,
             @RequestParam(value = "facetValue", required = false) String facetValue) {
+        logger.info("searchFacets called with facetTypes: {} and facetValue: {}", facetTypes, facetValue);
         try {
-            return facetService.searchFacets(facetTypes, facetValue);
+            List<Map<String, Object>> results = facetService.searchFacets(facetTypes, facetValue);
+            logger.info("searchFacets completed successfully with results: {}", results);
+            return results;
         } catch (Exception e) {
             logger.error("Error occurred while searching facets", e);
             return Collections.emptyList();
@@ -69,8 +72,11 @@ public class FacetController {
     public Map<String, Object> listData(
             @RequestParam(value = "pageNumber", defaultValue = "1") int pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "200") int pageSize) {
+        logger.info("listData called with pageNumber: {} and pageSize: {}", pageNumber, pageSize);
         try {
-            return facetService.listData(pageNumber, pageSize);
+            Map<String, Object> results = facetService.listData(pageNumber, pageSize);
+            logger.info("listData completed successfully with results: {}", results);
+            return results;
         } catch (Exception e) {
             logger.error("Error occurred while listing facet data: {}", e.getMessage(), e);
             return Collections.emptyMap();

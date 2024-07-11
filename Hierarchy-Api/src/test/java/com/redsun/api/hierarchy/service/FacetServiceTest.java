@@ -1,6 +1,7 @@
 package com.redsun.api.hierarchy.service;
 
 import com.redsun.api.hierarchy.constant.ConstantTest;
+import com.redsun.api.hierarchy.constant.Constant;
 import com.redsun.api.hierarchy.repository.FacetRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,7 +11,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
+import static com.jayway.jsonpath.internal.path.PathCompiler.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -27,7 +30,7 @@ class FacetServiceTest {
 
     @Test
     void testSearchFacetsWithValidInput() {
-
+        try {
         List<String> facetTypes = Arrays.asList(ConstantTest.ATS_CODE, ConstantTest.EST_EFF_PRICE_GT_0);
         String facetValue = "Y";
 
@@ -39,22 +42,30 @@ class FacetServiceTest {
         assertEquals(2, response.size());
         assertEquals(ConstantTest.ATS_CODE, response.get(0).get("facetType"));
 
+    }catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     @Test
     void testSearchFacetsWithMissingFacetTypes() {
-
+        try {
         List<String> facetTypes = null;
 
         List<Map<String, Object>> response = facetService.searchFacets(facetTypes, null);
 
         assertEquals(1, response.size());
         assertEquals("The query parameter facetType is missing", response.get(0).get("error"));
+    }catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     @Test
     void testListData() {
-
+        try {
         Integer pageNumber = 1;
         Integer pageSize = 100;
         Map<String, Object> mockData = createSampleListData();
@@ -64,6 +75,43 @@ class FacetServiceTest {
 
         assertEquals(pageNumber, response.get("pageNumber"));
         assertEquals(8, response.get("count"));
+    }catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void testSearchFacetsException() {
+        try {
+            List<String> facetTypes = Arrays.asList("ats_code", "Brand");
+            String facetValue = "Y";
+            when(facetRepository.searchFacets(facetTypes, facetValue)).thenThrow(new RuntimeException("Error"));
+
+            List<Map<String, Object>> result = facetService.searchFacets(facetTypes, facetValue);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("An error occurred while fetching facets. Please try again later.", result.get(0).get(Constant.ERROR));
+        } catch (Exception e) {
+            fail("Exception thrown during test: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void testListDataException() {
+        try {
+            Integer pageNumber = 1;
+            Integer pageSize = 10;
+            when(facetRepository.listData(pageNumber, pageSize)).thenThrow(new RuntimeException("Error"));
+
+            Map<String, Object> result = facetService.listData(pageNumber, pageSize);
+
+            assertNotNull(result);
+            assertEquals("An error occurred while fetching data. Please try again later.", result.get(Constant.ERROR));
+        } catch (Exception e) {
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     private List<Map<String, Object>> createSampleFacets() {

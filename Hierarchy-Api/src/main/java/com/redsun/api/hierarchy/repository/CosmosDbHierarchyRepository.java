@@ -5,7 +5,7 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redsun.api.hierarchy.constant.Const;
+import com.redsun.api.hierarchy.constant.Constant;
 import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +64,7 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
             Map<String, String> displayNameToBase36Id = mapDisplayNameToBase36Id(items);
 
             boolean classCodeFound = items.stream()
-                    .anyMatch(item -> classCode.equals(item.get(Const.CLASSCODE)));
+                    .anyMatch(item -> classCode.equals(item.get(Constant.CLASSCODE)));
 
             List<Map<String, Object>> response = new ArrayList<>();
 
@@ -95,8 +95,8 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
         try {
             Map<String, String> displayNameToBase36Id = new HashMap<>();
             items.forEach(item -> {
-                String displayName = (String) item.get(Const.DISPLAYNAME);
-                String base36Id = (String) item.get(Const.BASE36ID);
+                String displayName = (String) item.get(Constant.DISPLAYNAME);
+                String base36Id = (String) item.get(Constant.BASE36ID);
                 displayNameToBase36Id.put(displayName, base36Id);
             });
             return displayNameToBase36Id;
@@ -116,18 +116,18 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
     private Map<String, Object> placeholderEntry(String classCode) {
         try {
             Map<String, Object> classCodeEntry = new HashMap<>();
-            classCodeEntry.put(Const.CLASSCODE, classCode);
-            classCodeEntry.put(Const.DISPLAYNAME, null);
+            classCodeEntry.put(Constant.CLASSCODE, classCode);
+            classCodeEntry.put(Constant.DISPLAYNAME, null);
 
             Map<String, Object> hierarchyItem = new HashMap<>();
             hierarchyItem.put("path", null);
-            hierarchyItem.put(Const.PARENTBASE36ID, "null");
-            hierarchyItem.put(Const.BASE36ID, "null");
+            hierarchyItem.put(Constant.PARENTBASE36ID, "null");
+            hierarchyItem.put(Constant.BASE36ID, "null");
 
             List<Map<String, Object>> hierarchyValues = new ArrayList<>();
             hierarchyValues.add(hierarchyItem);
 
-            classCodeEntry.put(Const.HIERARCHYVALUES, hierarchyValues);
+            classCodeEntry.put(Constant.HIERARCHYVALUES, hierarchyValues);
 
             return classCodeEntry;
         } catch (Exception e) {
@@ -147,25 +147,25 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
     private void processItemsForHierarchy(List<Map<String, Object>> items, String classCode, Map<String, String> displayNameToBase36Id, Map<String, Map<String, Object>> classCodeToHierarchy) {
         try {
             items.stream()
-                    .filter(item -> classCode.equals(item.get(Const.CLASSCODE)))
+                    .filter(item -> classCode.equals(item.get(Constant.CLASSCODE)))
                     .forEach(item -> {
-                        String displayName = (String) item.get(Const.DISPLAYNAME);
-                        String base36Id = (String) item.get(Const.BASE36ID);
+                        String displayName = (String) item.get(Constant.DISPLAYNAME);
+                        String base36Id = (String) item.get(Constant.BASE36ID);
                         String path = (String) item.get("path");
 
                         Map<String, Object> hierarchyItem = new HashMap<>();
                         hierarchyItem.put("path", path);
-                        hierarchyItem.put(Const.BASE36ID, base36Id);
-                        hierarchyItem.put(Const.PARENTBASE36ID, computeParentBase36Id(path, displayNameToBase36Id));
+                        hierarchyItem.put(Constant.BASE36ID, base36Id);
+                        hierarchyItem.put(Constant.PARENTBASE36ID, computeParentBase36Id(path, displayNameToBase36Id));
 
                         if (!classCodeToHierarchy.containsKey(classCode)) {
                             Map<String, Object> classCodeEntry = new HashMap<>();
-                            classCodeEntry.put(Const.CLASSCODE, classCode);
-                            classCodeEntry.put(Const.DISPLAYNAME, displayName);
-                            classCodeEntry.put(Const.HIERARCHYVALUES, new ArrayList<>());
+                            classCodeEntry.put(Constant.CLASSCODE, classCode);
+                            classCodeEntry.put(Constant.DISPLAYNAME, displayName);
+                            classCodeEntry.put(Constant.HIERARCHYVALUES, new ArrayList<>());
                             classCodeToHierarchy.put(classCode, classCodeEntry);
                         }
-                        ((List<Map<String, Object>>) classCodeToHierarchy.get(classCode).get(Const.HIERARCHYVALUES)).add(hierarchyItem);
+                        ((List<Map<String, Object>>) classCodeToHierarchy.get(classCode).get(Constant.HIERARCHYVALUES)).add(hierarchyItem);
                     });
         } catch (Exception e) {
             logger.error("Error processing items for hierarchy for classCode {}: {}", classCode, e.getMessage(), e);
@@ -261,24 +261,24 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
             Map<String, String> displayNameToBase36Id = new HashMap<>();
 
             for (Map<String, Object> item : items) {
-                String displayName = (String) item.get(Const.DISPLAYNAME);
-                String base36Id = (String) item.get(Const.BASE36ID);
+                String displayName = (String) item.get(Constant.DISPLAYNAME);
+                String base36Id = (String) item.get(Constant.BASE36ID);
                 displayNameToBase36Id.put(displayName, base36Id);
             }
 
             for (Map<String, Object> item : items) {
-                String displayName = (String) item.get(Const.DISPLAYNAME);
-                String base36Id = (String) item.get(Const.BASE36ID);
+                String displayName = (String) item.get(Constant.DISPLAYNAME);
+                String base36Id = (String) item.get(Constant.BASE36ID);
                 String path = (String) item.get("path");
 
 
                 Map<String, Object> responseItem = new HashMap<>();
-                responseItem.put(Const.DISPLAYNAME, displayName);
-                responseItem.put(Const.BASE36ID, base36Id);
+                responseItem.put(Constant.DISPLAYNAME, displayName);
+                responseItem.put(Constant.BASE36ID, base36Id);
 
                 String parentBase36Id = fetchParentBase36Id(path, displayNameToBase36Id);
 
-                responseItem.put(Const.PARENTBASE36ID, parentBase36Id);
+                responseItem.put(Constant.PARENTBASE36ID, parentBase36Id);
                 response.add(responseItem);
             }
 
@@ -372,16 +372,16 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
             List<Map<String, Object>> results = new ArrayList<>();
 
             items.forEach(item -> {
-                String itemClassCode = (String) item.get(Const.CLASSCODE);
-                String base36Id = (String) item.get(Const.BASE36ID);
+                String itemClassCode = (String) item.get(Constant.CLASSCODE);
+                String base36Id = (String) item.get(Constant.BASE36ID);
 
                 if (avoidDuplicates && base36IdMap.containsKey(itemClassCode)) {
                     return;
                 }
 
                 Map<String, Object> result = new HashMap<>();
-                result.put(Const.CLASSCODE, itemClassCode);
-                result.put(Const.BASE36ID, base36Id);
+                result.put(Constant.CLASSCODE, itemClassCode);
+                result.put(Constant.BASE36ID, base36Id);
                 results.add(result);
 
                 base36IdMap.put(itemClassCode, base36Id);
@@ -390,8 +390,8 @@ public class CosmosDbHierarchyRepository implements HierarchyRepository {
             for (String classCode : classCodes) {
                 if (!base36IdMap.containsKey(classCode)) {
                     Map<String, Object> result = new HashMap<>();
-                    result.put(Const.CLASSCODE, classCode);
-                    result.put(Const.BASE36ID, null);
+                    result.put(Constant.CLASSCODE, classCode);
+                    result.put(Constant.BASE36ID, null);
                     results.add(result);
                 }
             }

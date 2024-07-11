@@ -27,6 +27,8 @@ public class CosmosDbConfiguration {
     @Value("${azure.cosmos.container}")
     private String containerName;
 
+
+
     /**
      * Bean definition for creating a CosmosClient instance.
      *

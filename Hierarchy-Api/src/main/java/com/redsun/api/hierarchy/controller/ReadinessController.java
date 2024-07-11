@@ -12,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/health")
+
 public class ReadinessController {
 
     private static final Logger logger = LoggerFactory.getLogger(ReadinessController.class);
@@ -24,6 +25,7 @@ public class ReadinessController {
     @GetMapping("/readiness")
     public Map<String, String> readinessCheck() {
         Map<String, String> healthStatus = new HashMap<>();
+        logger.info("readinessCheck called");
         try {
             healthStatus.put("status", "UP");
             healthStatus.put("message", "Readiness check successful");
@@ -37,6 +39,7 @@ public class ReadinessController {
 
     @GetMapping("/liveness")
     public Map<String, String> livenessCheck() {
+        logger.info("livenessCheck called");
         Map<String, String> healthStatus = new HashMap<>();
         try {
             healthStatus.put("status", "UP");
