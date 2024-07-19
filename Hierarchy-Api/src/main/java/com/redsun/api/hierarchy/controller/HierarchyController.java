@@ -40,7 +40,7 @@ public class HierarchyController {
      */
     @GetMapping("/class-code/{classCode}")
     public List<Map<String, Object>> fetchClassCodeData(@PathVariable String classCode) {
-        logger.info("fetchClassCodeData called with classCode: {}", classCode);
+        logger.info("ClassCodeData called with classCode: {}", classCode);
         try {
             return hierarchyService.fetchClassCodeData(classCode);
         } catch (Exception e) {
@@ -61,7 +61,7 @@ public class HierarchyController {
     public List<Map<String, Object>> getHierarchyData(
             @RequestParam(required = false) String classCode,
             @RequestParam(required = false, defaultValue = "true") boolean avoidDuplicates) {
-        logger.info("getHierarchyData called with classCode: {} and avoidDuplicates: {}", classCode, avoidDuplicates);
+        logger.info("HierarchyData called with classCode: {} and avoidDuplicates: {}", classCode, avoidDuplicates);
         try {
             return hierarchyService.getHierarchyData(classCode, avoidDuplicates);
         } catch (Exception e) {

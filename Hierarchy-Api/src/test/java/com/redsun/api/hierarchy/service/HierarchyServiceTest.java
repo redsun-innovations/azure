@@ -1,6 +1,6 @@
 package com.redsun.api.hierarchy.service;
 
-import com.redsun.api.hierarchy.constant.Const;
+
 import com.redsun.api.hierarchy.constant.ConstantTest;
 import com.redsun.api.hierarchy.repository.HierarchyRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -171,7 +171,7 @@ class HierarchyServiceTest {
 
             assertNotNull(result);
             assertEquals(1, result.size());
-            assertEquals("An error occurred while fetching class code data. Please try again later.", result.get(0).get(Const.ERROR));
+            assertEquals("An error occurred while fetching class code data. Please try again later.", result.get(0).get("error"));
         } catch (Exception e) {
             fail("Exception thrown during test: " + e.getMessage());
         }
@@ -188,7 +188,7 @@ class HierarchyServiceTest {
 
             assertNotNull(result);
             assertEquals(1, result.size());
-            assertEquals("An error occurred while fetching hierarchy data. Please try again later.", result.get(0).get(Const.ERROR));
+            assertEquals("An error occurred while fetching hierarchy data. Please try again later.", result.get(0).get("error"));
         } catch (Exception e) {
             fail("Exception thrown during test: " + e.getMessage());
         }

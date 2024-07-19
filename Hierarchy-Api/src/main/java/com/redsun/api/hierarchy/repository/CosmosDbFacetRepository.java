@@ -8,6 +8,7 @@ import com.azure.cosmos.util.CosmosPagedIterable;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -17,7 +18,7 @@ import java.util.*;
  * This class provides methods for searching and listing facet data.
  */
 
-@Repository
+@Component
 public class CosmosDbFacetRepository implements FacetRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(CosmosDbFacetRepository.class);

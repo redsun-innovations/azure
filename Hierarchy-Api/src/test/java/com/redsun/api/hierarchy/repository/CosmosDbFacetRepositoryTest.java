@@ -242,6 +242,6 @@ class CosmosDbFacetRepositoryTest {
         assertEquals("8d", facetValues.get(0).get(ConstantTest.FACETBASE36ID));
     }
 
-    
+
 }
 

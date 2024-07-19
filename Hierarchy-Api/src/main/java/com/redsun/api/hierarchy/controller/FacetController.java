@@ -52,7 +52,7 @@ public class FacetController {
         logger.info("searchFacets called with facetTypes: {} and facetValue: {}", facetTypes, facetValue);
         try {
             List<Map<String, Object>> results = facetService.searchFacets(facetTypes, facetValue);
-            logger.info("searchFacets completed successfully with results: {}", results);
+            logger.info("Facetsdata retrived successfully with results");
             return results;
         } catch (Exception e) {
             logger.error("Error occurred while searching facets", e);
@@ -75,7 +75,7 @@ public class FacetController {
         logger.info("listData called with pageNumber: {} and pageSize: {}", pageNumber, pageSize);
         try {
             Map<String, Object> results = facetService.listData(pageNumber, pageSize);
-            logger.info("listData completed successfully with results: {}", results);
+            logger.info("ListData retrived successfully with results");
             return results;
         } catch (Exception e) {
             logger.error("Error occurred while listing facet data: {}", e.getMessage(), e);

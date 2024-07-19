@@ -129,20 +129,20 @@ class FacetControllerTest {
     }
     }
 
-    @Test
-    void testListDataException() throws Exception {
-        try {
-            when(facetService.listData(anyInt(), anyInt())).thenThrow(new RuntimeException("Error"));
+        @Test
+        void testListDataException() throws Exception {
+            try {
+                when(facetService.listData(anyInt(), anyInt())).thenThrow(new RuntimeException("Error"));
 
-            // Perform GET request
-            mockMvc.perform(get("/v1/facets/list"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().json("{}"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception thrown during test: " + e.getMessage());
+                // Perform GET request
+                mockMvc.perform(get("/v1/facets/list"))
+                        .andExpect(status().isOk())
+                        .andExpect(content().json("{}"));
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail("Exception thrown during test: " + e.getMessage());
+            }
         }
-    }
 
     private List<Map<String, Object>> createSampleFacets() {
         List<Map<String, Object>> facets = new ArrayList<>();
