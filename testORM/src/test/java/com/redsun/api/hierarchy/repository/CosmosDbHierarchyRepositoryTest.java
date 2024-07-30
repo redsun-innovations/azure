@@ -1,15 +1,11 @@
 package com.redsun.api.hierarchy.repository;
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redsun.api.hierarchy.entity.HierarchyEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,9 +13,6 @@ import com.redsun.api.hierarchy.constant.ConstantTest;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 
@@ -32,43 +25,32 @@ class CosmosDbHierarchyRepositoryTest {
     @Mock
     private CosmosPagedIterable<JsonNode> cosmosPagedIterable;
 
-    @InjectMocks
+    @Mock
+    private HierarchyRepository mockHierarchyRepository;
+
+
     private CosmosDbHierarchyRepository hierarchyRepository;
-zz
+
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        hierarchyRepository  = new CosmosDbHierarchyRepository(container,hierarchyRepository);
+        hierarchyRepository  = new CosmosDbHierarchyRepository(container,mockHierarchyRepository);
     }
 
     @Test
     void testFetchClassCodeData()  {
-        ObjectMapper objectMapper = new ObjectMapper();
+        String classCode = "1157";
+        List<HierarchyEntity> mockEntities = Arrays.asList(
+                new HierarchyEntity("Home Decor", "de018k", "null", "0010"),
+                new HierarchyEntity("Fresh Flowers & Houseplants", "mgr0", "Home Decor", "1157")
+        );
 
-        JsonNode item1 = objectMapper.createObjectNode()
-                .put(ConstantTest.DISPLAYNAME, ConstantTest.HOME_DECOR)
-                .put(ConstantTest.BASE36ID, ConstantTest.DE018K)
-                .put("path", "null")
-                .put(ConstantTest.CLASSCODE, "0010");
+        when(mockHierarchyRepository.fetchClassCodeData(classCode)).thenReturn(mockEntities);
 
-        JsonNode item2 = objectMapper.createObjectNode()
-                .put(ConstantTest.DISPLAYNAME, ConstantTest.FRESH_FLOWERS)
-                .put(ConstantTest.BASE36ID, "mgr0")
-                .put("path", ConstantTest.HOME_DECOR)
-                .put(ConstantTest.CLASSCODE, "1157");
+        // When
+        List<Map<String, Object>> result = hierarchyRepository.fetchClassCodeData(classCode);
 
-        ArrayNode mockItems = objectMapper.createArrayNode();
-        mockItems.add(item1);
-        mockItems.add(item2);
-
-        // Mock CosmosPagedIterable with the List of JsonNode objects
-        CosmosPagedIterable<JsonNode> mockQueryResults = mock(CosmosPagedIterable.class);
-        when(mockQueryResults.iterator()).thenReturn(mockItems.elements());
-        when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
-                .thenReturn(mockQueryResults);
-
-        List<Map<String, Object>> result = hierarchyRepository.fetchClassCodeData("1157");
 
         assertEquals(1, result.size());
         Map<String, Object> fetchedItem = result.get(0);
@@ -77,48 +59,25 @@ zz
 
         List<Map<String, Object>> hierarchyValues = (List<Map<String, Object>>) fetchedItem.get("hierarchyValues");
 
-            Map<String, Object> firstHierarchyValue = hierarchyValues.get(0);
-            String base36IdInHierarchy = (String) firstHierarchyValue.get(ConstantTest.BASE36ID);
+        Map<String, Object> firstHierarchyValue = hierarchyValues.get(0);
+        String base36IdInHierarchy = (String) firstHierarchyValue.get(ConstantTest.BASE36ID);
         assertEquals("mgr0", base36IdInHierarchy);
         assertEquals(ConstantTest.HOME_DECOR, firstHierarchyValue.get("path"));
         assertEquals(ConstantTest.DE018K, firstHierarchyValue.get(ConstantTest.PARENTBASE36ID));
 
-        verify(container, times(1)).queryItems(anyString(), any(CosmosQueryRequestOptions.class), eq(JsonNode.class));
     }
 
 
     @Test
     void testFetchAllHierarchyData() {
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        List<HierarchyEntity> mockEntities = Arrays.asList(
+                new HierarchyEntity("Home Decor", "de018k", "null", "0010"),
+                new HierarchyEntity("Fresh Flowers", "mgr0", "Home Decor", "1157"),
+                new HierarchyEntity("Cut Roses", "mgr1", "Home Decor/Fresh Flowers", "1163")
+        );
 
-        JsonNode item1 = objectMapper.createObjectNode()
-                .put(ConstantTest.DISPLAYNAME, ConstantTest.HOME_DECOR)
-                .put(ConstantTest.BASE36ID, ConstantTest.DE018K)
-                .put("path", "null")
-                .put(ConstantTest.CLASSCODE, "0010");
-
-        JsonNode item2 = objectMapper.createObjectNode()
-                .put(ConstantTest.DISPLAYNAME, ConstantTest.FRESH_FLOWERS)
-                .put(ConstantTest.BASE36ID, "mgr0")
-                .put("path", ConstantTest.HOME_DECOR)
-                .put(ConstantTest.CLASSCODE, "1157");
-
-        JsonNode item3 = objectMapper.createObjectNode()
-                .put(ConstantTest.DISPLAYNAME, "Cut Roses")
-                .put(ConstantTest.BASE36ID, "mgr0")
-                .put("path", "Home Decor/Fresh Flowers & Houseplants")
-                .put(ConstantTest.CLASSCODE, "1163");
-
-        ArrayNode mockItems = objectMapper.createArrayNode();
-        mockItems.add(item1);
-        mockItems.add(item2);
-        mockItems.add(item3);
-
-        CosmosPagedIterable<JsonNode> mockQueryResults = mock(CosmosPagedIterable.class);
-        when(mockQueryResults.iterator()).thenReturn(mockItems.elements());
-        when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
-                .thenReturn(mockQueryResults);
+        when(mockHierarchyRepository.fetchAllHierarchyData()).thenReturn(mockEntities);
 
         List<Map<String, Object>> result = hierarchyRepository.fetchAllHierarchyData();
 
@@ -130,29 +89,16 @@ zz
         assertTrue(parentBase36Id == null || "".equals(parentBase36Id),
                 "Expected parentBase36Id to be null or empty");
 
-        verify(container, times(1)).queryItems(anyString(), any(CosmosQueryRequestOptions.class), eq(JsonNode.class));
     }
     @Test
     void testListAllHierarchyData() {
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        List<HierarchyEntity> mockEntities = Arrays.asList(
+                new HierarchyEntity(null, "de018k", null, "0010"),
+                new HierarchyEntity(null, "mgr0", null, "1157")
+        );
 
-        ObjectNode item1 = objectMapper.createObjectNode()
-                .put(ConstantTest.CLASSCODE, "0010")
-                .put(ConstantTest.BASE36ID, ConstantTest.DE018K);
-
-        ObjectNode item2 = objectMapper.createObjectNode()
-                .put(ConstantTest.CLASSCODE, "1157")
-                .put(ConstantTest.BASE36ID, "mgr0");
-
-        ArrayNode mockItems = objectMapper.createArrayNode();
-        mockItems.add(item1);
-        mockItems.add(item2);
-
-        CosmosPagedIterable<JsonNode> mockQueryResults = mock(CosmosPagedIterable.class);
-        when(mockQueryResults.iterator()).thenReturn(mockItems.elements());
-        when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
-                .thenReturn(mockQueryResults);
+        when(mockHierarchyRepository.listAllHierarchyData(anyList(), anyBoolean())).thenReturn(mockEntities);
 
         List<Map<String, Object>> result = hierarchyRepository.listAllHierarchyData(List.of("0010", "1157"), true);
 
@@ -162,18 +108,16 @@ zz
         assertEquals("1157", result.get(1).get(ConstantTest.CLASSCODE));
         assertEquals("mgr0", result.get(1).get(ConstantTest.BASE36ID));
 
-        verify(container, times(1)).queryItems(anyString(), any(CosmosQueryRequestOptions.class), eq(JsonNode.class));
     }
 
     @Test
     void testFetchClassCodeDataNotFound() {
-        // Mock CosmosPagedIterable with an empty list
-        CosmosPagedIterable<JsonNode> mockQueryResults = mock(CosmosPagedIterable.class);
-        when(mockQueryResults.iterator()).thenReturn(new ArrayList<JsonNode>().iterator());
-        when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
-                .thenReturn(mockQueryResults);
 
         String classCode = "1111";
+        List<HierarchyEntity> mockEntities = Collections.emptyList();
+
+        when(mockHierarchyRepository.fetchClassCodeData(classCode)).thenReturn(mockEntities);
+
 
         List<Map<String, Object>> result = hierarchyRepository.fetchClassCodeData(classCode);
 
@@ -190,7 +134,41 @@ zz
         assertEquals("null", hierarchyItem.get(ConstantTest.PARENTBASE36ID));
         assertEquals("null", hierarchyItem.get(ConstantTest.BASE36ID));
 
-        verify(container, times(1)).queryItems(anyString(), any(CosmosQueryRequestOptions.class), eq(JsonNode.class));
     }
 
+    @Test
+    void testTransformHierarchyData() {
+        List<String> base36Ids = Arrays.asList("mgr0", "mgrw");
+        List<HierarchyEntity> mockEntities = Arrays.asList(
+                new HierarchyEntity("Fresh Flowers & Houseplants",  "mgr0", "For the Home","1157"),
+                new HierarchyEntity("Cut Roses",   "mgrw", "For the Home/Fresh Flowers & Houseplants","1163"),
+                new HierarchyEntity("Fresh Balsam",  "4z7lv", "For the Home/Fresh Flowers & Houseplants","C136")
+        );
+
+        when(mockHierarchyRepository.findHierarchyByBase36Ids(base36Ids)).thenReturn(mockEntities);
+
+        List<Map<String, Object>> expectedTransformedData = Arrays.asList(
+                createTransformedData("mgr0", "Fresh Flowers & Houseplants", "1157"),
+                createTransformedData("mgrw", "Cut Roses", "1163"),
+                createTransformedData("4z7lv", "Fresh Balsam", "C136")
+        );
+
+
+        List<Map<String, Object>> result = hierarchyRepository.findHierarchyByBase36Ids(base36Ids);
+
+        assertEquals(expectedTransformedData, result);
+    }
+
+    private Map<String, Object> createTransformedData(String base36Id, String name, String classCode) {
+        Map<String, Object> transformedData = new HashMap<>();
+        transformedData.put("base36Id", base36Id);
+        transformedData.put("name", name);
+
+        Map<String, Object> typeData = new HashMap<>();
+        typeData.put("Category", "hierarchy");
+        typeData.put("classCode", classCode);
+        transformedData.put("type", typeData);
+
+        return transformedData;
+    }
 }

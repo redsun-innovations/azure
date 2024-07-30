@@ -1,27 +1,51 @@
-package com.redsun.api.hierarchy.model;
+package com.redsun.api.hierarchy.entity;
+
+import com.azure.spring.data.cosmos.core.mapping.Container;
+import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
+import org.springframework.data.annotation.Id;
 
 import java.util.List;
 
+@Container(containerName = "Users")  // Replace with your container name
+public class FacetEntity {
+    @Id
+    private int id;
+    @PartitionKey
+    private String pk;
 
-/**
- * This class encapsulates data related to facet types, values, pagination,
- * and a list of data items associated with the facet group.
- */
-public class FacetGroup {
     private String facetType;
     private String facetValue;
-
     private String base36Id;
     private String facetTypebase36Id;
-
     private int pageNumber;
-
     private int count;
-
     private int pageSize;
-
     private List<String> data;
 
+
+    public FacetEntity (String facetType, String facetValue, String base36Id, String facetTypebase36Id){
+        this.facetType = facetType;
+        this.facetValue = facetValue;
+        this.base36Id = base36Id;
+        this.facetTypebase36Id = facetTypebase36Id;
+    }
+
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = Integer.parseInt(id);
+    }
+
+    public String getPk() {
+        return pk;
+    }
+
+    public void setPk(String pk) {
+        this.pk = pk;
+    }
     /**
      * Retrieves the facet type.
      * @return The facet type.
@@ -46,7 +70,7 @@ public class FacetGroup {
         return facetValue;
     }
 
-    /**
+    /**+
      * Sets the facet value.
      * @param facetValue The facet value to set.
      */
@@ -149,4 +173,6 @@ public class FacetGroup {
     public void setData(List<String> data) {
         this.data = data;
     }
+
+
 }

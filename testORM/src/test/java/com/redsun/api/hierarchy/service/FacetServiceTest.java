@@ -1,7 +1,10 @@
 package com.redsun.api.hierarchy.service;
 
 import com.redsun.api.hierarchy.constant.ConstantTest;
+import com.redsun.api.hierarchy.entity.FacetEntity;
+import com.redsun.api.hierarchy.repository.CosmosDbFacetRepository;
 import com.redsun.api.hierarchy.repository.FacetRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,7 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.jayway.jsonpath.internal.path.PathCompiler.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -18,13 +22,21 @@ import static org.mockito.Mockito.when;
 class FacetServiceTest {
 
     @Mock
-    private FacetRepository facetRepository;
+    private CosmosDbFacetRepository cosmosDbFacetRepository;
 
     @InjectMocks
     private FacetService facetService;
 
 
+    private List<FacetEntity> mockData;
 
+    @BeforeEach
+    public void setUp() {
+        mockData = List.of(
+                new FacetEntity("facet", "facet1","1324","1324"),
+                new FacetEntity("facet", "facet1","1324","1324")
+        );
+    }
     @Test
     void testSearchFacetsWithValidInput() {
 
@@ -32,13 +44,46 @@ class FacetServiceTest {
         String facetValue = "Y";
 
         List<Map<String, Object>> mockFacets = createSampleFacets();
-        when(facetRepository.searchFacets(anyList(), anyString())).thenReturn(mockFacets);
+        when(cosmosDbFacetRepository.searchFacets(anyList(), anyString())).thenReturn(mockFacets);
 
         List<Map<String, Object>> response = facetService.searchFacets(facetTypes, facetValue);
 
         assertEquals(2, response.size());
         assertEquals(ConstantTest.ATS_CODE, response.get(0).get("facetType"));
 
+    }
+
+    @Test
+    void testSearchFacetsException() {
+        try {
+            List<String> facetTypes = Arrays.asList("ats_code", "Brand");
+            String facetValue = "Y";
+            when(cosmosDbFacetRepository.searchFacets(facetTypes, facetValue)).thenThrow(new RuntimeException("Error"));
+
+            List<Map<String, Object>> result = facetService.searchFacets(facetTypes, facetValue);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("An error occurred while fetching facets. Please try again later.", result.get(0).get("ERROR"));
+        } catch (Exception e) {
+            fail("Exception thrown during test: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void testListDataException() {
+        try {
+            Integer pageNumber = 1;
+            Integer pageSize = 10;
+            when(cosmosDbFacetRepository.listData(pageNumber, pageSize)).thenThrow(new RuntimeException("Error"));
+
+            Map<String, Object> result = facetService.listData(pageNumber, pageSize);
+
+            assertNotNull(result);
+            assertEquals("An error occurred while fetching data. Please try again later.", result.get("Error"));
+        } catch (Exception e) {
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     @Test
@@ -53,17 +98,18 @@ class FacetServiceTest {
     }
 
     @Test
-    void testListData() {
-
-        Integer pageNumber = 1;
-        Integer pageSize = 100;
+    public void testListDataWithValidPageNumberAndPageSize() {
+        int pageNumber = 1;
+        int pageSize = 100;
         Map<String, Object> mockData = createSampleListData();
-        when(facetRepository.listData(pageNumber, pageSize)).thenReturn(mockData);
+        when(cosmosDbFacetRepository.listData(pageNumber, pageSize)).thenReturn((Map<String, Object>) mockData);
 
         Map<String, Object> response = facetService.listData(pageNumber, pageSize);
 
         assertEquals(pageNumber, response.get("pageNumber"));
-        assertEquals(8, response.get("count"));
+        assertEquals(pageSize, response.get("pageSize"));
+        assertEquals(mockData.size(), response.get("count"));
+        assertEquals(mockData, response.get("data"));
     }
 
     private List<Map<String, Object>> createSampleFacets() {
@@ -125,5 +171,53 @@ class FacetServiceTest {
 
         data.put("data", facets);
         return data;
+    }
+
+    @Test
+    void testFetchFacetData() {
+        String base36Ids = "6Z7Z8"; // Example base36 IDs
+        List<String> base36IdList = Arrays.asList("6", "7", "8");
+
+        // Create mock response
+        List<Map<String, Object>> mockResults = new ArrayList<>();
+        Map<String, Object> facet1 = new HashMap<>();
+        facet1.put("base36Id", "6");
+        facet1.put("facetType", "est_eff_price_gt_0");
+        facet1.put("type", Collections.singletonMap("Category", "facet"));
+        mockResults.add(facet1);
+
+        Map<String, Object> facet2 = new HashMap<>();
+        facet2.put("base36Id", "7");
+        facet2.put("facetType", "est_eff_price_gt_0");
+        facet2.put("type", Collections.singletonMap("Category", "facet"));
+        mockResults.add(facet2);
+
+        when(cosmosDbFacetRepository.findFacetByBase36Ids(base36IdList)).thenReturn(mockResults);
+
+        List<Map<String, Object>> response = facetService.fetchFacetData(base36Ids);
+
+        // Verify results
+        assertEquals(mockResults, response);
+    }
+
+    @Test
+    void testFetchFacetDataException() {
+        String base36Ids = "6Z7Z8"; // Example base36 IDs
+        List<String> base36IdList = Arrays.asList("6", "7", "8");
+
+        // Simulate exception
+        when(cosmosDbFacetRepository.findFacetByBase36Ids(base36IdList))
+                .thenThrow(new RuntimeException("Database access error"));
+
+        try {
+            facetService.fetchFacetData(base36Ids);
+
+            // If no exception is thrown, fail the test
+            fail("Expected an exception to be thrown.");
+        } catch (Exception e) {
+            // Verify exception type and message
+            assertTrue(e instanceof RuntimeException);
+            assertEquals("Database access error", e.getMessage());
+        }
     }
 }

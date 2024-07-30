@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.*;
 
+import static com.jayway.jsonpath.internal.path.PathCompiler.fail;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -96,6 +97,21 @@ class FacetControllerTest {
                 .andExpect(jsonPath("$.data[0].facetTypebase36Id").value("1"))
                 .andExpect(jsonPath("$.data[0].facetValues[0].base36Id").value("2"))
                 .andExpect(jsonPath("$.data[0].facetValues[0].facetValue").value("Y"));
+    }
+
+    @Test
+    void testListDataException() throws Exception {
+        try {
+            when(facetService.listData(anyInt(), anyInt())).thenThrow(new RuntimeException("Error"));
+
+            // Perform GET request
+            mockMvc.perform(get("/v1/facets/list"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("{}"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     private List<Map<String, Object>> createSampleFacets() {

@@ -6,21 +6,26 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redsun.api.hierarchy.entity.FacetEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import static org.mockito.Mockito.*;
 
 
 @AutoConfigureMockMvc
 class CosmosDbFacetRepositoryTest {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(CosmosDbFacetRepositoryTest.class);
 
     @Mock
     private CosmosClient cosmosClient;
@@ -32,15 +37,13 @@ class CosmosDbFacetRepositoryTest {
     private CosmosContainer container;
 
     @Mock
-    private CosmosPagedIterable<JsonNode> cosmosPagedIterable;
-
-
+    private FacetRepository mockFacetRepository;
     private CosmosDbFacetRepository facetRepository;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        facetRepository = new CosmosDbFacetRepository(container);
+        facetRepository = new CosmosDbFacetRepository(container,mockFacetRepository);
     }
 
 
@@ -51,20 +54,11 @@ class CosmosDbFacetRepositoryTest {
         List<String> facetTypes = Arrays.asList(ConstantTest.EST_EFF_PRICE_GT_0);
         String facetValue = "Y";
 
-        // Create JsonNode using ObjectMapper
-        JsonNode item1 = new ObjectMapper().createObjectNode()
-                .put("pk", ConstantTest.FACETS)
-                .put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0)
-                .put(ConstantTest.FACETTYPEBASE36ID, "5")
-                .put(ConstantTest.FACETVALUE, "Y")
-                .put(ConstantTest.FACETBASE36ID, "6");
-
-        CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
-        when(pagedIterable.iterator()).thenReturn(Collections.singletonList(item1).iterator());
-
-        // Mock container.queryItems
-        when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
-                .thenReturn(pagedIterable);
+        // Mock FacetRepository
+        List<FacetEntity> mockFacets = Collections.singletonList(
+                new FacetEntity("est_eff_price_gt_0", "Y", "6", "5")
+        );
+        when(mockFacetRepository.searchFacets(anyList(), anyString())).thenReturn(mockFacets);
 
         // When
         List<Map<String, Object>> result = facetRepository.searchFacets(facetTypes, facetValue);
@@ -86,36 +80,16 @@ class CosmosDbFacetRepositoryTest {
     @Test
     void testSearchFacetsWithMultipleFacetValues() {
         // Given
-        List<String> facetTypes = Arrays.asList(ConstantTest.EST_EFF_PRICE_GT_0, ConstantTest.BRAND);
+        List<String> facetTypes = Arrays.asList("est_eff_price_gt_0", "Brand");
         String facetValue = null;
 
-        JsonNode jsonNode1 = new ObjectMapper().createObjectNode()
-                .put("pk", ConstantTest.FACETS)
-                .put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0)
-                .put(ConstantTest.FACETTYPEBASE36ID, "5")
-                .put(ConstantTest.FACETVALUE, "Y")
-                .put(ConstantTest.FACETBASE36ID, "6");
-
-        JsonNode jsonNode2 = new ObjectMapper().createObjectNode()
-                .put("pk", ConstantTest.FACETS)
-                .put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0)
-                .put(ConstantTest.FACETTYPEBASE36ID, "5")
-                .put(ConstantTest.FACETVALUE, "N")
-                .put(ConstantTest.FACETBASE36ID, "7");
-
-        JsonNode jsonNode3 = new ObjectMapper().createObjectNode()
-                .put("pk", ConstantTest.FACETS)
-                .put(ConstantTest.FACETTYPE, ConstantTest.BRAND)
-                .put(ConstantTest.FACETTYPEBASE36ID, "8c")
-                .put(ConstantTest.FACETVALUE, "Dell")
-                .put(ConstantTest.FACETBASE36ID, "8d");
-
-        CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
-        when(pagedIterable.iterator()).thenReturn(Arrays.asList(jsonNode1, jsonNode2, jsonNode3).iterator());
-
-        // Mock container.queryItems
-        when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
-                .thenReturn(pagedIterable);
+        // Mock FacetRepository
+        List<FacetEntity> mockFacets = Arrays.asList(
+                new FacetEntity("est_eff_price_gt_0", "Y", "6", "5"),
+                new FacetEntity("est_eff_price_gt_0", "N", "7", "5"),
+                new FacetEntity("Brand", "Dell", "8d", "8c")
+        );
+        when(mockFacetRepository.searchFacets(facetTypes, facetValue)).thenReturn(mockFacets);
 
         // When
         List<Map<String, Object>> result = facetRepository.searchFacets(facetTypes, facetValue);
@@ -125,7 +99,7 @@ class CosmosDbFacetRepositoryTest {
 
         Map<String, Object> facet1 = result.get(0);
         assertEquals(ConstantTest.EST_EFF_PRICE_GT_0, facet1.get(ConstantTest.FACETTYPE));
-        assertEquals("5", facet1.get(ConstantTest.FACETTYPEBASE36ID));
+        assertEquals("5", facet1.get(ConstantTest.FACETTYPEBASE36ID));;
         List<Map<String, Object>> facetValues1 = (List<Map<String, Object>>) facet1.get(ConstantTest.FACETVALUES);
         assertEquals(2, facetValues1.size());
         assertEquals("Y", facetValues1.get(0).get(ConstantTest.FACETVALUE));
@@ -148,25 +122,12 @@ class CosmosDbFacetRepositoryTest {
         Integer pageNumber = null; // Should default to 1
         Integer pageSize = null;   // Should default to 200
 
-        JsonNode jsonNode1 = new ObjectMapper().createObjectNode()
-                .put("pk", ConstantTest.FACETS)
-                .put(ConstantTest.FACETTYPE, ConstantTest.EST_EFF_PRICE_GT_0)
-                .put(ConstantTest.FACETTYPEBASE36ID, "5")
-                .put(ConstantTest.FACETVALUE, "Y")
-                .put(ConstantTest.FACETBASE36ID, "6");
-
-        JsonNode jsonNode2 = new ObjectMapper().createObjectNode()
-                .put("pk", ConstantTest.FACETS)
-                .put(ConstantTest.FACETTYPE, ConstantTest.BRAND)
-                .put(ConstantTest.FACETTYPEBASE36ID, "8c")
-                .put(ConstantTest.FACETVALUE, "Dell")
-                .put(ConstantTest.FACETBASE36ID, "8d");
-
-        CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
-        when(pagedIterable.iterator()).thenReturn(Arrays.asList(jsonNode1, jsonNode2).iterator());
-
-        when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
-                .thenReturn(pagedIterable);
+        // Mock FacetRepository
+        List<FacetEntity> mockFacets = Arrays.asList(
+                new FacetEntity("est_eff_price_gt_0", "Y", "6", "5"),
+                new FacetEntity("Brand", "Dell", "8d", "8c")
+        );
+        when(mockFacetRepository.listData(any(Integer.class), any(Integer.class))).thenReturn(mockFacets);
 
         // When
         Map<String, Object> result = facetRepository.listData(pageNumber, pageSize);
@@ -203,19 +164,11 @@ class CosmosDbFacetRepositoryTest {
         Integer pageNumber = 2;
         Integer pageSize = 1;
 
-        JsonNode jsonNode1 = new ObjectMapper().createObjectNode()
-                .put("pk", ConstantTest.FACETS)
-                .put(ConstantTest.FACETTYPE, ConstantTest.BRAND)
-                .put(ConstantTest.FACETTYPEBASE36ID, "8c")
-                .put(ConstantTest.FACETVALUE, "Dell")
-                .put(ConstantTest.FACETBASE36ID, "8d");
-
-        CosmosPagedIterable<JsonNode> pagedIterable = mock(CosmosPagedIterable.class);
-        when(pagedIterable.iterator()).thenReturn(Collections.singletonList(jsonNode1).iterator());
-
-        // Mock container.queryItems
-        when(container.queryItems(any(String.class), any(CosmosQueryRequestOptions.class), eq(JsonNode.class)))
-                .thenReturn(pagedIterable);
+        // Mock FacetRepository
+        List<FacetEntity> mockFacets = Collections.singletonList(
+                new FacetEntity("Brand", "Dell", "8d", "8c")
+        );
+        when(mockFacetRepository.listData(any(Integer.class), any(Integer.class))).thenReturn(mockFacets);
 
         // When
         Map<String, Object> result = facetRepository.listData(pageNumber, pageSize);
@@ -236,5 +189,55 @@ class CosmosDbFacetRepositoryTest {
         assertEquals("Dell", facetValues.get(0).get(ConstantTest.FACETVALUE));
         assertEquals("8d", facetValues.get(0).get(ConstantTest.FACETBASE36ID));
     }
+
+
+    @Test
+    void testFindFacetByBase36Ids() {
+        List<String> base36Ids = Arrays.asList("6", "7");
+        List<FacetEntity> mockResults = Arrays.asList(
+                new FacetEntity( "est_eff_price_gt_0", "Y", "6", "5"),
+                new FacetEntity( "est_eff_price_gt_0", "N", "7", "5")
+
+        );
+
+        when(mockFacetRepository.findFacetByBase36Ids(base36Ids)).thenReturn(mockResults);
+
+        List<Map<String, Object>> expectedTransformedData = Arrays.asList(
+                createTransformedData("6", "est_eff_price_gt_0", "Y"),
+                createTransformedData("7", "est_eff_price_gt_0", "N")
+        );
+
+        List<Map<String, Object>> results = facetRepository.findFacetByBase36Ids(base36Ids);
+
+        assertEquals(expectedTransformedData, results);
+
+    }
+
+//    @Test
+//    void testFindFacetByBase36Ids_Exception() {
+//        List<String> base36Ids = Arrays.asList("6", "7", "8");
+//        when(mockFacetRepository.findFacetByBase36Ids(base36Ids)).thenThrow(new RuntimeException("Error"));
+//
+//        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+//            facetRepository.findFacetByBase36Ids(base36Ids);
+//        });
+//
+//        assertEquals("Error", exception.getMessage());
+//        verify(logger).error(eq("Error occurred while finding facet data."), eq(base36Ids), eq("Error"), any(RuntimeException.class));
+//    }
+
+    private Map<String, Object> createTransformedData(String base36Id, String facetType, String facetValue) {
+        Map<String, Object> transformedData = new HashMap<>();
+        transformedData.put("base36Id", base36Id);
+        transformedData.put("facetType", facetType);
+
+        Map<String, Object> typeData = new HashMap<>();
+        typeData.put("Category", "facet");
+        typeData.put("facetValue", facetValue);
+        transformedData.put("type", typeData);
+
+        return transformedData;
+    }
+
 }
 

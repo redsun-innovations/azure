@@ -16,8 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
+import static com.jayway.jsonpath.internal.path.PathCompiler.fail;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -61,6 +61,21 @@ class HierarchyControllerTest {
     }
 
     @Test
+    void testFetchClassCodeDataException() throws Exception {
+        try {
+            when(hierarchyService.fetchClassCodeData(anyString())).thenThrow(new RuntimeException("Error"));
+
+            // Perform GET request
+            mockMvc.perform(get("/v1/hierarchy/class-code/{classCode}", "H157"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("[]"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
+    }
+
+    @Test
     void testGetHierarchyDataWithoutClassCode() throws Exception {
 
         List<Map<String, Object>> mockResponse = new ArrayList<>();
@@ -80,4 +95,20 @@ class HierarchyControllerTest {
         verify(hierarchyService).getHierarchyData(isNull(), eq(true));
     }
 
+    @Test
+    void testGetHierarchyDataException() throws Exception {
+        try {
+            when(hierarchyService.getHierarchyData(anyString(), anyBoolean())).thenThrow(new RuntimeException("Error"));
+
+            // Perform GET request
+            mockMvc.perform(get("/v1/hierarchy")
+                            .param("classCode", "H157")
+                            .param("avoidDuplicates", "true"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json("[]"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown during test: " + e.getMessage());
+        }
+    }
 }

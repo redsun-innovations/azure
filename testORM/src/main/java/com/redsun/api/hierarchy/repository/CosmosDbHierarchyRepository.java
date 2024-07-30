@@ -1,10 +1,12 @@
 package com.redsun.api.hierarchy.repository;
 
 import com.azure.cosmos.CosmosContainer;
+import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redsun.api.hierarchy.constant.Const;
-import com.redsun.api.hierarchy.model.HierarchyEntity;
+import com.redsun.api.hierarchy.entity.HierarchyEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -14,7 +16,7 @@ import java.util.*;
  * Repository for managing and querying hierarchy data in Azure Cosmos DB.
  * This repository provides methods to fetch hierarchy data, including class codes and hierarchical relationships.
  */
-@Repository
+@Component
 public class CosmosDbHierarchyRepository {
     private final CosmosContainer container;
     private final ObjectMapper objectMapper;
@@ -282,14 +284,14 @@ public class CosmosDbHierarchyRepository {
      * @return a list of maps, each containing class code and base36 ID retrieved from Cosmos DB
      */
 
-        public List<Map<String, Object>> listAllHierarchyData(List<String> classCodes,boolean avoidDuplicates) {
-            List<HierarchyEntity> entities = hierarchyRepository.listAllHierarchyData(classCodes, avoidDuplicates);
+    public List<Map<String, Object>> listAllHierarchyData(List<String> classCodes,boolean avoidDuplicates) {
+        List<HierarchyEntity> entities = hierarchyRepository.listAllHierarchyData(classCodes, avoidDuplicates);
 
-            List<Map<String, Object>> items = new ArrayList<>();
-            for (HierarchyEntity entity : entities) {
-                Map<String, Object> itemMap = objectMapper.convertValue(entity, new TypeReference<Map<String, Object>>() {});
-                items.add(itemMap);
-            }
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (HierarchyEntity entity : entities) {
+            Map<String, Object> itemMap = objectMapper.convertValue(entity, new TypeReference<Map<String, Object>>() {});
+            items.add(itemMap);
+        }
         Map<String, String> base36IdMap = new HashMap<>();
         List<Map<String, Object>> results = new ArrayList<>();
 
@@ -319,6 +321,47 @@ public class CosmosDbHierarchyRepository {
         }
 
         return results;
+    }
+
+
+
+    public List<Map<String, Object>> findHierarchyByBase36Ids(List<String> base36Ids) {
+        CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
+        List<HierarchyEntity> results = new ArrayList<>();
+
+        try {
+            results = hierarchyRepository.findHierarchyByBase36Ids(base36Ids);
+
+            return transformHierarchyData(results);
+        } catch (Exception e) {
+           // logger.error("Error occurred while fetching hierarchy data", e);
+            throw e;
+        }
+    }
+
+    private List<Map<String, Object>> transformHierarchyData(List<HierarchyEntity> hierarchyEntities) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        Set<String> seenBase36Ids = new HashSet<>();
+
+        for (HierarchyEntity entity : hierarchyEntities) {
+            if (seenBase36Ids.contains(entity.getBase36Id())) {
+                continue;
+            }
+
+            seenBase36Ids.add(entity.getBase36Id());
+            Map<String, Object> transformedData = new HashMap<>();
+            transformedData.put("base36Id", entity.getBase36Id());
+            transformedData.put("name", entity.getDisplayName());
+
+            Map<String, Object> typeData = new HashMap<>();
+            typeData.put("Category", "hierarchy");
+            typeData.put("classCode", entity.getClassCode());
+            transformedData.put("type", typeData);
+
+            result.add(transformedData);
+        }
+
+        return result;
     }
 
 }

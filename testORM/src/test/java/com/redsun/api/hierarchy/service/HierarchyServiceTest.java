@@ -1,6 +1,7 @@
 package com.redsun.api.hierarchy.service;
 
 import com.redsun.api.hierarchy.constant.ConstantTest;
+import com.redsun.api.hierarchy.repository.CosmosDbHierarchyRepository;
 import com.redsun.api.hierarchy.repository.HierarchyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,13 +11,18 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.*;
 
+import static com.jayway.jsonpath.internal.path.PathCompiler.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class HierarchyServiceTest {
 
     @Mock
-    private HierarchyRepository hierarchyRepository;
+    private CosmosDbHierarchyRepository cosmosDbHierarchyRepository;
 
     @InjectMocks
     private HierarchyService hierarchyService;
@@ -52,10 +58,26 @@ class HierarchyServiceTest {
 
         mockResponse.add(classCodeEntry);
 
-        when(hierarchyRepository.fetchClassCodeData(classCode)).thenReturn(mockResponse);
+        when(cosmosDbHierarchyRepository.fetchClassCodeData(classCode)).thenReturn(mockResponse);
         List<Map<String, Object>> response = hierarchyService.fetchClassCodeData(classCode);
 
         assertEquals(mockResponse, response);
+    }
+
+    @Test
+    void testFetchClassCodeDataException() {
+        try {
+            String classCode = "0010";
+            when(cosmosDbHierarchyRepository.fetchClassCodeData(classCode)).thenThrow(new RuntimeException("Error"));
+
+            List<Map<String, Object>> result = hierarchyService.fetchClassCodeData(classCode);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("An error occurred while fetching class code data. Please try again later.", result.get(0).get("error"));
+        } catch (Exception e) {
+            fail("Exception thrown during test: " + e.getMessage());
+        }
     }
 
     @Test
@@ -81,7 +103,7 @@ class HierarchyServiceTest {
         mockResponse.add(entry2);
         mockResponse.add(entry3);
 
-        when(hierarchyRepository.listAllHierarchyData(classCodes, avoidDuplicates)).thenReturn(mockResponse);
+        when(cosmosDbHierarchyRepository.listAllHierarchyData(classCodes, avoidDuplicates)).thenReturn(mockResponse);
 
         List<Map<String, Object>> response = hierarchyService.getHierarchyData(String.join(",", classCodes), avoidDuplicates);
 
@@ -101,10 +123,76 @@ class HierarchyServiceTest {
 
         mockResponse.add(hierarchyItem);
 
-        when(hierarchyRepository.fetchAllHierarchyData()).thenReturn(mockResponse);
+        when(cosmosDbHierarchyRepository.fetchAllHierarchyData()).thenReturn(mockResponse);
 
         List<Map<String, Object>> response = hierarchyService.getHierarchyData(classCode, avoidDuplicates);
 
         assertEquals(mockResponse, response);
     }
+
+    @Test
+    void testGetHierarchyDataException() {
+        try {
+            String classCode = "sampleCode";
+            boolean avoidDuplicates = true;
+            when(cosmosDbHierarchyRepository.listAllHierarchyData(anyList(), eq(avoidDuplicates))).thenThrow(new RuntimeException("Error"));
+
+            List<Map<String, Object>> result = hierarchyService.getHierarchyData(classCode, avoidDuplicates);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+            assertEquals("An error occurred while fetching hierarchy data. Please try again later.", result.get(0).get("error"));
+        } catch (Exception e) {
+            fail("Exception thrown during test: " + e.getMessage());
+        }
+    }
+    @Test
+    void testFetchHierarchyData() {
+        // Sample data for testing
+        List<String> base36Ids = Arrays.asList("mgr0", "mgrw", "4z7lv");
+        List<Map<String, Object>> mockResponse = Arrays.asList(
+                createSampleHierarchyData("mgr0", "Fresh Flowers & Houseplants", "1157"),
+                createSampleHierarchyData("mgrw", "Cut Roses", "1163"),
+                createSampleHierarchyData("4z7lv", "Fresh Balsam", "C136")
+        );
+
+        // Mock repository method
+        when(cosmosDbHierarchyRepository.findHierarchyByBase36Ids(base36Ids)).thenReturn(mockResponse);
+
+        // Test the service method
+        String base36IdString = String.join("Z", base36Ids);
+        List<Map<String, Object>> response = hierarchyService.fetchHierarchyData(base36IdString);
+
+        // Assertions
+        assertEquals(mockResponse, response);
+        verify(cosmosDbHierarchyRepository).findHierarchyByBase36Ids(base36Ids);
+    }
+
+    @Test
+    void testFetchHierarchyDataThrowsException() {
+        // Sample data for testing
+        String base36IdString = "mgr0ZmgrwZ4z7lv";
+        when(cosmosDbHierarchyRepository.findHierarchyByBase36Ids(anyList())).thenThrow(new RuntimeException("Database error"));
+
+        // Test exception handling
+        try {
+            hierarchyService.fetchHierarchyData(base36IdString);
+        } catch (Exception e) {
+            assertEquals("Database error", e.getMessage());
+        }
+
+        verify(cosmosDbHierarchyRepository).findHierarchyByBase36Ids(anyList());
+    }
+
+    private Map<String, Object> createSampleHierarchyData(String base36Id, String displayName, String classCode) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("base36Id", base36Id);
+        data.put("name", displayName);
+        Map<String, Object> typeData = new HashMap<>();
+        typeData.put("Category", "hierarchy");
+        typeData.put("classCode", classCode);
+        data.put("type", typeData);
+        return data;
+    }
+
 }
