@@ -1,0 +1,77 @@
+
+”
+java:S1120"wMake this line start after 2 spaces instead of 4 in order to indent the code consistently. (Indentation level is at 2.)(Ê–Úå8¼ÄĞğ—2
+™
+java:S1120"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(º‹ùÿÿÿÿÿ8¾ÄĞğ—2
+š
+java:S1120"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(ËúÈ–úÿÿÿÿ8¿ÄĞğ—2
+š
+java:S1120"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(Ä‰Àúÿÿÿÿ8ÀÄĞğ—2
+™
+java:S1120!"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(ıÀ¤ûÿÿÿÿ8ÁÄĞğ—2
+š
+java:S1120'"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(Ù½·úÿÿÿÿ8ÁÄĞğ—2
+š
+java:S1120)"xMake this line start after 8 spaces instead of 16 in order to indent the code consistently. (Indentation level is at 2.)(íôÚÇşÿÿÿÿ8ÂÄĞğ—2
+–
+java:S1120*"yMake this line start after 10 spaces instead of 20 in order to indent the code consistently. (Indentation level is at 2.)(‚’Õ†8ÂÄĞğ—2
+”
+java:S1120?"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(˜ƒöú8ÃÄĞğ—2
+”
+java:S1120E"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(É‡™8ÃÄĞğ—2
+š
+java:S1120H"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(Íœ øÿÿÿÿ8ÃÄĞğ—2
+s	java:S109I"RAssign this magic number 2 to a well-named constant, and use the constant instead.(ÉŒšÑşÿÿÿÿ8ÅÄĞğ—2
+s	java:S109J"RAssign this magic number 3 to a well-named constant, and use the constant instead.(©™ëóùÿÿÿÿ8ÅÄĞğ—2
+m	java:S109K"RAssign this magic number 4 to a well-named constant, and use the constant instead.(ğìg8ÆÄĞğ—2
+s	java:S109L"RAssign this magic number 5 to a well-named constant, and use the constant instead.(Á¶õÜşÿÿÿÿ8ÇÄĞğ—2
+s	java:S109M"RAssign this magic number 6 to a well-named constant, and use the constant instead.(äæ·ùÿÿÿÿ8ÇÄĞğ—2
+n	java:S109N"RAssign this magic number 7 to a well-named constant, and use the constant instead.(«—çœ8ÉÄĞğ—2
+s	java:S109O"RAssign this magic number 8 to a well-named constant, and use the constant instead.(Åó¦ıøÿÿÿÿ8ÉÄĞğ—2
+n	java:S109P"RAssign this magic number 9 to a well-named constant, and use the constant instead.(ş±«”8ÊÄĞğ—2
+o	java:S109Q"SAssign this magic number 10 to a well-named constant, and use the constant instead.(®˜¶Ú8ÊÄĞğ—2
+`
+java:S1312"CRename the "logger" logger to comply with the format "LOG(?:GER)?".(Ê–Úå8ÌÄĞğ—2
+i	java:S101"MRename this class name to match the regular expression '^[A-Z][a-zA-Z0-9]*$'.(ëøÿ 8¨¤Ñğ—2
+^
+java:S1106"AMove this left curly brace to the beginning of next line of code.(ëøÿ 8×ÄĞğ—2
+^
+java:S1106"AMove this left curly brace to the beginning of next line of code.(Çµí‘8ØÄĞğ—2
+c
+java:S1106"AMove this left curly brace to the beginning of next line of code.(İÍÔ‚ûÿÿÿÿ8ØÄĞğ—2
+^
+java:S1106"AMove this left curly brace to the beginning of next line of code.(É®£8ØÄĞğ—2
+c
+java:S1106 "AMove this left curly brace to the beginning of next line of code.(…¯âøÿÿÿÿ8ØÄĞğ—2
+c
+java:S1106&"AMove this left curly brace to the beginning of next line of code.(»áıûÿÿÿÿ8ÙÄĞğ—2
+^
+java:S1106("AMove this left curly brace to the beginning of next line of code.(ˆ«Á 8ÙÄĞğ—2
+c
+java:S1106)"AMove this left curly brace to the beginning of next line of code.(íôÚÇşÿÿÿÿ8ÚÄĞğ—2
+^
+java:S1106>"AMove this left curly brace to the beginning of next line of code.(û˜áª8ÛÄĞğ—2
+^
+java:S1106D"AMove this left curly brace to the beginning of next line of code.(†‹ã8ÛÄĞğ—2
+^
+java:S1106G"AMove this left curly brace to the beginning of next line of code.(•º†8ÛÄĞğ—2
+4
+java:S1451"&Add or update the header of this file.
+l	java:S103"KSplit this 140 characters long line (which is greater than 120 authorized).(Ö·ƒûÿÿÿÿ8—ÅĞğ—2
+l	java:S103"KSplit this 130 characters long line (which is greater than 120 authorized).(ƒÑ˜¤ûÿÿÿÿ8—ÅĞğ—2
+l	java:S103$"KSplit this 205 characters long line (which is greater than 120 authorized).(Âéíûÿÿÿÿ8˜ÅĞğ—2
+g	java:S1035"KSplit this 215 characters long line (which is greater than 120 authorized).(Ä³äÔ8˜ÅĞğ—2
+l	java:S1036"KSplit this 160 characters long line (which is greater than 120 authorized).(¤ˆëûÿÿÿÿ8˜ÅĞğ—2
+g	java:S1038"KSplit this 168 characters long line (which is greater than 120 authorized).(ö’×Á8˜ÅĞğ—2
+g	java:S103D"KSplit this 277 characters long line (which is greater than 120 authorized).(†‹ã8™ÅĞğ—2
+g	java:S103E"KSplit this 253 characters long line (which is greater than 120 authorized).(É‡™8™ÅĞğ—2
+l	java:S103S"KSplit this 210 characters long line (which is greater than 120 authorized).(ËÑ±Ûşÿÿÿÿ8™ÅĞğ—2
+l	java:S103T"KSplit this 152 characters long line (which is greater than 120 authorized).(¤ˆëûÿÿÿÿ8™ÅĞğ—2
+E
+java:S3416"(Update this logger to use "azure.class".(Ê–Úå8Ú¤Ñğ—2
+Y	java:S107D"=Method has 11 parameters, which is greater than 7 authorized.(†‹ã8­ÅĞğ—2
+W	java:S139"6Move this trailing comment on the previous empty line.(ƒÑ˜¤ûÿÿÿÿ8´ÅĞğ—2
+O
+java:S1108"2Move this "catch" keyword to a new dedicated line.(É®£8·ÅĞğ—2
+d
+java:S1774A"GConvert this usage of the ternary operator to an "if"/"else" structure.(ı­½¸8ÖÅĞğ—2

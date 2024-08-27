@@ -1,0 +1,83 @@
+
+™
+java:S1120"wMake this line start after 2 spaces instead of 4 in order to indent the code consistently. (Indentation level is at 2.)(Ö·ƒûÿÿÿÿ8§ÂöŸ—2
+™
+java:S1120"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(¯Áëøÿÿÿÿ8¨ÂöŸ—2
+š
+java:S1120"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(ƒÑÓëıÿÿÿÿ8ñÖöŸ—2
+•
+java:S1120"xMake this line start after 8 spaces instead of 16 in order to indent the code consistently. (Indentation level is at 2.)(Ç ÕÑ8©ÂöŸ—2
+•
+java:S1120"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(¸‹ø„8ªÂöŸ—2
+™
+java:S1120"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(ÃÅøûÿÿÿÿ8ªÂöŸ—2
+•
+java:S1120%"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(ªø¹Å8«ÂöŸ—2
+š
+java:S1120'"xMake this line start after 8 spaces instead of 16 in order to indent the code consistently. (Indentation level is at 2.)(íôÚÇşÿÿÿÿ8«ÂöŸ—2
+–
+java:S1120("yMake this line start after 10 spaces instead of 20 in order to indent the code consistently. (Indentation level is at 2.)(…×îß8­ÂöŸ—2
+”
+java:S11207"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(˜ƒöú8øÆÜ —2
+š
+java:S1120<"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(•œŞ–ÿÿÿÿÿ8øÆÜ —2
+•
+java:S1120?"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(¹Ò²¡8ùÆÜ —2
+™
+java:S1120D"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(ßªëıûÿÿÿÿ8°ÂöŸ—2
+š
+java:S1120G"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(Šíµ‡úÿÿÿÿ8±ÂöŸ—2
+n	java:S109"RAssign this magic number 2 to a well-named constant, and use the constant instead.(ÓÎ§´8²ÂöŸ—2
+s	java:S109H"RAssign this magic number 2 to a well-named constant, and use the constant instead.(˜¨¬·şÿÿÿÿ8ÂâÛ —2
+n	java:S109I"RAssign this magic number 3 to a well-named constant, and use the constant instead.(ı¹´˜8´ÂöŸ—2
+n	java:S109J"RAssign this magic number 4 to a well-named constant, and use the constant instead.(Ù¼®Á8µÂöŸ—2
+m	java:S109K"RAssign this magic number 5 to a well-named constant, and use the constant instead.(šÔ<8µÂöŸ—2
+n	java:S109L"RAssign this magic number 6 to a well-named constant, and use the constant instead.(¼¡Ä€8¶ÂöŸ—2
+B
+java:S1166"%Either log or rethrow this exception.(É®£8¹ÂöŸ—2
+;	java:S113"'Add a new line at the end of this file.8ÀÂöŸ—2
+^
+java:S1106	"AMove this left curly brace to the beginning of next line of code.(àªÅö8ÅÂöŸ—2
+^
+java:S1106"AMove this left curly brace to the beginning of next line of code.(Çµí‘8ÅÂöŸ—2
+c
+java:S1106"AMove this left curly brace to the beginning of next line of code.(İÍÔ‚ûÿÿÿÿ8ÆÂöŸ—2
+c
+java:S1106"AMove this left curly brace to the beginning of next line of code.(ƒÑÓëıÿÿÿÿ8ÆÂöŸ—2
+^
+java:S1106"AMove this left curly brace to the beginning of next line of code.(É®£8ÆÂöŸ—2
+c
+java:S1106"AMove this left curly brace to the beginning of next line of code.(¤×üÆøÿÿÿÿ8ÆÂöŸ—2
+c
+java:S1106$"AMove this left curly brace to the beginning of next line of code.(»áıûÿÿÿÿ8ÆÂöŸ—2
+^
+java:S1106&"AMove this left curly brace to the beginning of next line of code.(ˆ«Á 8ÇÂöŸ—2
+c
+java:S1106'"AMove this left curly brace to the beginning of next line of code.(íôÚÇşÿÿÿÿ8ÇÂöŸ—2
+^
+java:S11065"AMove this left curly brace to the beginning of next line of code.(û˜áª8ÇÂöŸ—2
+^
+java:S1106;"AMove this left curly brace to the beginning of next line of code.(ˆìç‹8º—Ü —2
+^
+java:S1106="AMove this left curly brace to the beginning of next line of code.(å¥‡8º—Ü —2
+c
+java:S1106B"AMove this left curly brace to the beginning of next line of code.(º‹ôÓùÿÿÿÿ8˜ÇÜ —2
+^
+java:S1106F"AMove this left curly brace to the beginning of next line of code.(•º†8™ÇÜ —2
+;
+java:S1451"&Add or update the header of this file.8—ÃöŸ—2
+l	java:S103"KSplit this 140 characters long line (which is greater than 120 authorized).(Ö·ƒûÿÿÿÿ8›ÃöŸ—2
+l	java:S103B"KSplit this 164 characters long line (which is greater than 120 authorized).(º‹ôÓùÿÿÿÿ8ÃöŸ—2
+l	java:S103O"KSplit this 123 characters long line (which is greater than 120 authorized).(©Ò„Çıÿÿÿÿ8ŸÃöŸ—2
+G	java:S106"+Replace this use of System.out by a logger.(Ç›ÜÏ8´ÃöŸ—2
+O
+java:S1108"2Move this "catch" keyword to a new dedicated line.(É®£8µÃöŸ—2
+G	java:S106"+Replace this use of System.out by a logger.(¶÷úÙ8»ÃöŸ—2
+G	java:S106"+Replace this use of System.err by a logger.(¸‹ø„8ÂÃöŸ—2
+L	java:S106"+Replace this use of System.out by a logger.(Î«…ıÿÿÿÿ8ÎÃöŸ—2
+G	java:S106 "+Replace this use of System.out by a logger.(‹ìã…8ÏÃöŸ—2
+L	java:S106."+Replace this use of System.out by a logger.(ÜÅÒœÿÿÿÿÿ8İÃöŸ—2
+N
+java:S1108="1Move this "else" keyword to a new dedicated line.(å¥‡8€ÈÜ —2
+R	java:S139L"6Move this trailing comment on the previous empty line.(¼¡Ä€8ôÃöŸ—2
+L	java:S106N"+Replace this use of System.out by a logger.(¹ØÓÜşÿÿÿÿ8õÃöŸ—2

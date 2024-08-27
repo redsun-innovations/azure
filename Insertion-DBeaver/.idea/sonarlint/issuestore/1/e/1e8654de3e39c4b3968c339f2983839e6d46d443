@@ -1,0 +1,61 @@
+
+’
+java:S1120"wMake this line start after 2 spaces instead of 4 in order to indent the code consistently. (Indentation level is at 2.)(¸è¤ÿÿÿÿÿ
+’
+java:S1120"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(¯Áëøÿÿÿÿ
+“
+java:S1120"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(ƒÑÓëıÿÿÿÿ
+“
+java:S1120 "xMake this line start after 8 spaces instead of 16 in order to indent the code consistently. (Indentation level is at 2.)(ØßÆ÷şÿÿÿÿ
+“
+java:S1120$"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(Ä‰Àúÿÿÿÿ
+
+java:S1120)"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(îŸ½£
+“
+java:S1120-"xMake this line start after 6 spaces instead of 12 in order to indent the code consistently. (Indentation level is at 2.)(Ù½·úÿÿÿÿ
+“
+java:S1120/"xMake this line start after 8 spaces instead of 16 in order to indent the code consistently. (Indentation level is at 2.)(íôÚÇşÿÿÿÿ
+
+java:S11200"yMake this line start after 10 spaces instead of 20 in order to indent the code consistently. (Indentation level is at 2.)(…×îß
+
+java:S1120@"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(˜ƒöú
+
+java:S1120F"wMake this line start after 4 spaces instead of 8 in order to indent the code consistently. (Indentation level is at 2.)(İ¨Ò©
+^
+java:S1312"CRename the "logger" logger to comply with the format "LOG(?:GER)?".(¸è¤ÿÿÿÿÿ
+W
+java:S1106"AMove this left curly brace to the beginning of next line of code.(¢Úßˆ
+W
+java:S1106"AMove this left curly brace to the beginning of next line of code.(Çµí‘
+\
+java:S1106"AMove this left curly brace to the beginning of next line of code.(Ş‡­±ıÿÿÿÿ
+\
+java:S1106"AMove this left curly brace to the beginning of next line of code.(ƒÑÓëıÿÿÿÿ
+W
+java:S1106#"AMove this left curly brace to the beginning of next line of code.(É®£
+V
+java:S1106("AMove this left curly brace to the beginning of next line of code.(Õë¾'
+\
+java:S1106,"AMove this left curly brace to the beginning of next line of code.(»áıûÿÿÿÿ
+W
+java:S1106."AMove this left curly brace to the beginning of next line of code.(ˆ«Á 
+\
+java:S1106/"AMove this left curly brace to the beginning of next line of code.(íôÚÇşÿÿÿÿ
+W
+java:S1106?"AMove this left curly brace to the beginning of next line of code.(û˜áª
+W
+java:S1106E"AMove this left curly brace to the beginning of next line of code.(³ºîË
+4
+java:S1451"&Add or update the header of this file.
+e	java:S103"KSplit this 140 characters long line (which is greater than 120 authorized).(Ö·ƒûÿÿÿÿ
+e	java:S103"KSplit this 130 characters long line (which is greater than 120 authorized).(ƒÑ˜¤ûÿÿÿÿ
+_	java:S103("KSplit this 130 characters long line (which is greater than 120 authorized).(Õë¾'
+`	java:S103E"KSplit this 166 characters long line (which is greater than 120 authorized).(³ºîË
+`	java:S103F"KSplit this 122 characters long line (which is greater than 120 authorized).(İ¨Ò©
+D
+java:S2208	".Explicitly import the specific classes needed.(´İ…Å
+P	java:S139"6Move this trailing comment on the previous empty line.(ƒÑ˜¤ûÿÿÿÿ
+H
+java:S1108#"2Move this "catch" keyword to a new dedicated line.(É®£
+]
+java:S1774B"GConvert this usage of the ternary operator to an "if"/"else" structure.(ı­½¸
