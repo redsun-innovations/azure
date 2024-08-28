@@ -84,4 +84,101 @@ public class azure {
                     dimvalSpec, displayOrder, dimensionName, endecaId, displayName, action, parentSpec, createdTime, lastUpdatedTime, actionDetermined);
         }
     }
+
+    private static void fetchAndStoreData(Connection conn) throws SQLException {
+        logger.debug("Fetching data from the CLASS_NOTE table, records updated after: {}", SPECIFIC_TIME);
+
+        // Define your SQL script
+        String sqlScript = "WITH temp_hier(Parent_Class_Id, Parent_Class_Code, Child_Class_Id, Child_Class_Disp_Name, " +
+                "Child_Class_Code, Child_Class_Type, Class_Seq_NBR, CRTE_TMS, LAST_UPD_TMS) AS " +
+                "(SELECT cs.prnt_class_id, rtrim(caiParent.CLASS_ALT_CD) AS Parent_Class_Code, cs.child_class_id, " +
+                "rtrim(cnChild.class_note_txt) AS Class_Display_Name, cast(rtrim(caiChild.class_alt_cd) as varchar) AS Class_Code, " +
+                "cast(rtrim(cmcChild.app_misc_cd) as varchar), 1, cnChild.CRTE_TMS, cnChild.LAST_UPD_TMS " +
+                "FROM q.class_struct cs with(nolock) " +
+                "INNER JOIN q.class cChild with(nolock) on cChild.class_id = cs.child_class_id " +
+                "INNER JOIN q.class_note cnChild with(nolock) on cnChild.class_id = cs.child_class_id " +
+                "INNER JOIN q.class_alt_id caiChild with(nolock) on caiChild.class_id = cs.child_class_id " +
+                "INNER JOIN q.class_misc_code cmcChild with(nolock) on cmcChild.class_id = cs.child_class_id " +
+                "INNER JOIN q.class cParent with(nolock) ON cParent.class_id = cs.PRNT_CLASS_ID " +
+                "INNER JOIN q.class_note cnParent with(nolock) ON cnParent.class_id = cs.PRNT_CLASS_ID " +
+                "INNER JOIN q.class_alt_id caiParent with(nolock) ON caiParent.class_id = cs.PRNT_CLASS_ID " +
+                "WHERE cs.class_struct_cd = 'CORPC' " +
+                "AND cnChild.class_note_typ_cd = 'CLSDN' " +
+                "AND cs.prim_prnt_ind = 'Y' " +
+                "AND cmcChild.app_misc_cd_typ_cd = 'DRILL' " +
+                "AND cmcChild.app_misc_cd = '1' " +
+                "AND cnParent.class_note_typ_cd = 'CLSDN' " +
+                "AND cs.child_class_id IN (58103,58772,58779,58780,58781,58782,58783,58785,58788, 58911,69605, 58784,69921,2000008) " +
+                "UNION ALL " +
+                "SELECT cs2.prnt_class_id, rtrim(caiParent.class_alt_cd), cs2.child_class_id, " +
+                "rtrim(cnChild.class_note_txt) AS Class_Display_Name, cast(rtrim(caiChild.class_alt_cd) as varchar) as Class_Code, " +
+                "cast(cmcChild.app_misc_cd as varchar), cs2.CLASS_SEQ_NBR AS Class_Seq_NBR, cnChild.CRTE_TMS, cnChild.LAST_UPD_TMS " +
+                "FROM temp_hier th, q.class_struct cs2 with(nolock) " +
+                "INNER JOIN q.class cChild with(nolock) on cChild.class_id = cs2.child_class_id " +
+                "INNER JOIN q.class_note cnChild with(nolock) on cnChild.class_id = cs2.child_class_id " +
+                "INNER JOIN q.class_alt_id caiChild with(nolock) on caiChild.class_id = cs2.child_class_id " +
+                "INNER JOIN q.class_misc_code cmcChild with(nolock) on cmcChild.class_id = cs2.child_class_id " +
+                "INNER JOIN q.class cParent with(nolock) ON cParent.class_id = cs2.PRNT_CLASS_ID " +
+                "INNER JOIN q.class_note cnParent with(nolock) ON cnParent.class_id = cs2.PRNT_CLASS_ID " +
+                "INNER JOIN q.class_alt_id caiParent with(nolock) ON caiParent.class_id = cs2.PRNT_CLASS_ID " +
+                "INNER JOIN q.CLASS_MISC_CODE cmc2 with(nolock) ON CMC2.CLASS_ID = cs2.child_class_id " +
+                "WHERE th.child_class_id = cs2.prnt_class_id " +
+                "AND cs2.class_struct_cd = 'CORPC' " +
+                "AND cnChild.class_note_typ_cd = 'CLSDN' " +
+                "AND cmcChild.app_misc_cd_typ_cd = 'DRILL' " +
+                "AND cnParent.class_note_typ_cd = 'CLSDN' " +
+                "AND cs2.disp_ind = 'Y' " +
+                "AND cmc2.APP_MISC_CD_TYP_CD = 'GROUP' " +
+                "AND cmc2.APP_MISC_CD = '1') " +
+                "SELECT 1 as 'dimval.display_order', 'Category' as 'dimval.dimension_name', " +
+                "rtrim(caiChild.class_alt_cd) as 'dimval.spec', concat('Category:', cast((rtrim(caiChild.class_alt_cd)) as varchar)) as 'Endeca.Id', " +
+                "rtrim(cnchild.CLASS_NOTE_TXT) as 'dimval.display_name', 'UPSERT' as 'Endeca.Action', '/' as 'dimval.parent_spec', " +
+                "cnChild.CRTE_TMS AS 'dimval.created_time', cnChild.LAST_UPD_TMS AS 'dimval.last_updated_time' " +
+                "FROM q.class_struct cs with(nolock) " +
+                "INNER JOIN q.class cChild with(nolock) on cChild.class_id = cs.child_class_id " +
+                "INNER JOIN q.class_note cnChild with(nolock) on cnChild.class_id = cs.child_class_id " +
+                "INNER JOIN q.class_alt_id caiChild with(nolock) on caiChild.class_id = cs.child_class_id " +
+                "INNER JOIN q.class_misc_code cmcChild with(nolock) on cmcChild.class_id = cs.child_class_id " +
+                "INNER JOIN q.CLASS_ALT_ID caiParent with(nolock) ON caiParent.CLASS_ID = cs.prnt_class_id " +
+                "WHERE cs.class_struct_cd = 'CORPC' " +
+                "AND cnChild.class_note_typ_cd = 'CLSDN' " +
+                "AND cs.prim_prnt_ind = 'Y' " +
+                "AND cmcChild.app_misc_cd_typ_cd = 'DRILL' " +
+                "AND cmcChild.app_misc_cd = '1' " +
+                "AND cs.child_class_id IN (58103,58772,58779,58780,58781,58782,58783,58785,58788, 58911,69605, 58784,69921,2000008) " +
+                "UNION ALL " +
+                "SELECT th.Class_Seq_NBR as 'dimval.display_order', 'Category' as 'dimval.dimension_name', " +
+                "rtrim(Child_Class_Code) as 'dimval.spec', concat('Category:', Child_Class_Code) as 'Endeca.Id', " +
+                "rtrim(child_class_disp_name) as 'dimval.display_name', 'UPSERT' as 'Endeca.Action', " +
+                "rtrim(Parent_Class_Code) as 'dimval.parent_spec', th.LAST_UPD_TMS AS 'dimval.last_updated_time', " +
+                "th.CRTE_TMS AS 'dimval_created_time' " +
+                "FROM temp_hier th " +
+                "WHERE th.child_class_type IN ('2', '3') " +
+                "ORDER BY 'dimval.display_order', 'dimval.spec'";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlScript);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            // Print the result set to console
+            while (rs.next()) {
+                int displayOrder = rs.getInt("dimval.display_order");
+                String dimensionName = rs.getString("dimval.dimension_name");
+                String spec = rs.getString("dimval.spec");
+                String endecaId = rs.getString("Endeca.Id");
+                String displayName = rs.getString("dimval.display_name");
+                String endecaAction = rs.getString("Endeca.Action");
+                String parentSpec = rs.getString("dimval.parent_spec");
+                Timestamp createdTime = rs.getTimestamp("dimval.created_time");
+                Timestamp lastUpdatedTime = rs.getTimestamp("dimval.last_updated_time");
+
+                // Print the output to the console
+                System.out.printf("Display Order: %d, Dimension Name: %s, Spec: %s, Endeca Id: %s, Display Name: %s, " +
+                                "Endeca Action: %s, Parent Spec: %s, Created Time: %s, Last Updated Time: %s%n",
+                        displayOrder, dimensionName, spec, endecaId, displayName, endecaAction, parentSpec,
+                        createdTime != null ? createdTime.toString() : null,
+                        lastUpdatedTime != null ? lastUpdatedTime.toString() : null);
+            }
+        }
+    }
+
 }
