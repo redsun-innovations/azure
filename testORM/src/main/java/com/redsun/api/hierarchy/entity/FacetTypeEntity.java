@@ -3,6 +3,7 @@ package com.redsun.api.hierarchy.entity;
 import com.azure.spring.data.cosmos.core.mapping.Container;
 import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
 import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Container(containerName = "Users")
 public class FacetTypeEntity {
@@ -13,9 +14,19 @@ public class FacetTypeEntity {
     private String pk;
 
     private String facetType;
+
+    @JsonInclude(JsonInclude. Include.NON_NULL)
+    private String facetValue;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String facetTypeDescription;
+
     private String base10;
     private String base36Id;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String facetTypebase36Id;
+
     private String priority;
     private String seoTitle;
     private String seoCanonicalUrl;
@@ -49,6 +60,14 @@ public class FacetTypeEntity {
         this.facetType = facetType;
     }
 
+    public String getFacetValue() {
+        return facetValue;
+    }
+
+    public void setFacetValue(String facetValue) {
+        this.facetValue = facetValue;
+    }
+
     public String getFacetTypeDescription() {
         return facetTypeDescription;
     }
@@ -71,6 +90,14 @@ public class FacetTypeEntity {
 
     public void setBase36Id(String base36Id) {
         this.base36Id = base36Id;
+    }
+
+    public String getFacetTypebase36Id() {
+        return facetTypebase36Id;
+    }
+
+    public void setFacetTypebase36Id(String facetTypebase36Id) {
+        this.facetTypebase36Id = facetTypebase36Id;
     }
 
     public String getPriority() {

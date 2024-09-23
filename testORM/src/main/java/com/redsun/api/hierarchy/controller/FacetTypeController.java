@@ -1,18 +1,27 @@
 package com.redsun.api.hierarchy.controller;
 
-import com.redsun.api.hierarchy.service.FacetService;
+import com.redsun.api.hierarchy.entity.FacetTypeEntity;
 import com.redsun.api.hierarchy.service.FacetTypeService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.http. ResponseEntity;
+import org.springframework.web.bind.annotation. PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/v1/facets")
 public class FacetTypeController {
 
+    private static final Logger logger = LoggerFactory.getLogger(FacetTypeController.class);
     private final FacetTypeService facetTypeService;
 
     /**
@@ -26,10 +35,16 @@ public class FacetTypeController {
         this.facetTypeService = facetTypeService;
     }
 
-    @PostMapping("/addFacetType")
-    public ResponseEntity<String> addFacetType(@RequestParam String facetType, @RequestParam String facetTypeDescription) {
-        String response = facetTypeService.addFacetType(facetType, facetTypeDescription);
-        return ResponseEntity.ok(response);
+    @PostMapping("/addFacets")
+    public ResponseEntity<String> addFacetType(@RequestBody FacetTypeEntity addFacet) {
+        try {
+            String facetType = addFacet.getFacetType();
+            String facetValue = addFacet.getFacetValue();
+            String response = facetTypeService.addFacetType(facetType, facetValue);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error creating facet type entity: {}", e.getMessage(), e); throw e;
+        }
     }
 
 }
