@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:mysql://your-db-url
+    username: your-db-user
+    password: your-db-password
+
+azure:
+  servicebus:
+    connection-string: your-service-bus-connection-string
+    topic-name: your-topic-name
+
+logging:
+  level:
+    root: INFO
