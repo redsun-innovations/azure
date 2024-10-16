@@ -1,0 +1,173 @@
+package com.api.data_migrator.service;
+
+
+import com.api.data_migrator.models.Node;
+import com.api.data_migrator.models.OutputRow;
+import com.api.data_migrator.models.PathAndDepth;
+import com.api.data_migrator.repository.NodeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.*;
+
+@Service
+public class NodeService {
+    @Autowired
+    private NodeRepository nodeRepository;
+
+    private static final String TIMESTAMP_FILE = "lastTimestamp.txt";
+    private static final String BASE10_FILE = "lastBase10.txt";
+
+    public void processAndSendData(Connection conn) throws SQLException {
+        Map<String, Node> tree = nodeRepository.fetchNodes(conn);
+
+        // Load the last timestamp
+        Timestamp lastTimestamp = loadLastTimestamp();
+
+        if (lastTimestamp == null) {
+            // First run, find the maxTimestamp and save it
+            Timestamp maxTimestamp = findMaxTimestamp(tree);
+            if (maxTimestamp != null) {
+                saveLastTimestamp(maxTimestamp);
+                System.out.println("Initial run: maxTimestamp saved as " + maxTimestamp);
+            } else {
+                System.out.println("No data found on initial run.");
+            }
+            return;
+        }
+
+        System.out.println("Using Last Timestamp: " + lastTimestamp);
+
+        List<OutputRow> outputData = new ArrayList<>();
+        Timestamp newLastTimestamp = lastTimestamp;
+
+        // Filter nodes based on last timestamp and collect new data
+        for (Map.Entry<String, Node> entry : tree.entrySet()) {
+            String spec = entry.getKey();
+            Node info = entry.getValue();
+
+            if (info.getLastUpdatedTime() != null && info.getLastUpdatedTime().after(lastTimestamp)) {
+                if (info.getLastUpdatedTime().after(newLastTimestamp)) {
+                    newLastTimestamp = info.getLastUpdatedTime();
+                }
+
+                PathAndDepth result = findPathAndDepth(tree, spec);
+                OutputRow row = new OutputRow(
+                        UUID.randomUUID().toString(),
+                        spec,
+                        info.getDisplayName(),
+                        info.getDimensionName(),
+                        info.getParentSpec(),
+                        result.getPath(),
+                        result.getDepth(),
+                        info.getLastUpdatedTime()
+                );
+                outputData.add(row);
+            }
+        }
+
+        if (outputData.isEmpty()) {
+            System.out.println("No new data added since last timestamp.");
+        } else {
+            //sendDataToAzureServiceBus(outputData, serviceBusConnectionString, topicName);
+            saveLastTimestamp(newLastTimestamp);
+        }
+    }
+
+    private Timestamp findMaxTimestamp(Map<String, Node> tree) {
+        Timestamp maxTimestamp = null;
+        for (Node node : tree.values()) {
+            if (node.getLastUpdatedTime() != null && (maxTimestamp == null || node.getLastUpdatedTime().after(maxTimestamp))) {
+                maxTimestamp = node.getLastUpdatedTime();
+            }
+        }
+        return maxTimestamp;
+    }
+
+    private void sendDataToAzureServiceBus(List<OutputRow> outputData, String serviceBusConnectionString, String topicName) {
+        long baseValue = loadLastBase10();
+        for (OutputRow row : outputData) {
+            long base10 = baseValue + outputData.indexOf(row) + 1;
+            String base36Id = Long.toString(base10, 36);
+            String jsonMessage = convertToJson(row, base10, base36Id);
+            AzureServiceBus.sendToAzureTopic(jsonMessage, serviceBusConnectionString, topicName);
+            saveLastBase10(base10);
+        }
+    }
+
+    private String convertToJson(OutputRow row, long base10, String base36Id) {
+        return "{"
+                + "\"pk\":\"hierarchy\","
+                + "\"name\":\"Category\","
+                + "\"displayName\":\"" + row.getDisplayName() + "\","
+                + "\"classCode\":\"" + row.getSpec() + "\","
+                + "\"base10\":\"" + base10 + "\","
+                + "\"base36Id\":\"" + base36Id + "\","
+                + "\"path\":\"" + row.getPath() + "\","
+                + "\"depth\":\"" + row.getDepth() + "\","
+                + "\"priority\":\"0\","
+                + "\"seoTitle\":\"\","
+                + "\"metaDescription\":\"\","
+                + "\"metaKeywords\":\"\","
+                + "\"seoCanonicalUrl\":\"\","
+                + "\"seoContent\":\"\""
+                + "}";
+    }
+
+    public PathAndDepth findPathAndDepth(Map<String, Node> tree, String spec) {
+        List<String> path = new ArrayList<>();
+        String currentSpec = spec;
+        while (!"/".equals(currentSpec)) {
+            Node currentNode = tree.get(currentSpec);
+            if (currentNode == null) break;
+            if (!currentSpec.equals(spec)) path.add(currentNode.getDisplayName());
+            currentSpec = currentNode.getParentSpec();
+        }
+        Collections.reverse(path);
+        String pathString = String.join("/", path);
+        int depth = path.size();
+        return new PathAndDepth(pathString, depth);
+    }
+
+    private Timestamp loadLastTimestamp() {
+        try {
+            String content = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(TIMESTAMP_FILE)));
+            return Timestamp.valueOf(content.trim());
+        } catch (Exception e) {
+            return null; // Return null if file not found or empty, indicating initial run
+        }
+    }
+
+    private void saveLastTimestamp(Timestamp timestamp) {
+        try {
+            java.nio.file.Files.write(java.nio.file.Paths.get(TIMESTAMP_FILE), timestamp.toString().getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private long loadLastBase10() {
+        try {
+            String content = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(BASE10_FILE)));
+            return Long.parseLong(content.trim());
+        } catch (Exception e) {
+            return 147523717;
+        }
+    }
+
+    private void saveLastBase10(long base10) {
+        try {
+            java.nio.file.Files.write(java.nio.file.Paths.get(BASE10_FILE), String.valueOf(base10).getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
